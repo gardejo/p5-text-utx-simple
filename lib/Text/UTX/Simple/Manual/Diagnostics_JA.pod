@@ -1,0 +1,503 @@
+=head1 NAME （名称）
+
+Text::UTX::Simple::Manual::Diagnostics_JA - 説明書: Text::UTX::Simpleの例外・警告の診断
+
+
+=head1 WARNING! WARNING! （警告！）
+
+B<現在、このドキュメントは整備中です。>
+
+
+=head1 DIAGNOSTICS （例外・警告の診断）
+
+=head2 C<Text::UTX::Simple>クラス由来
+
+=over 4
+
+=item C<< Can't create an object: option isn't a HASH reference >>
+
+C<new()>にオプションとして渡された引数のデータ型が不正です。
+何も渡さないか、渡すならハッシュリファレンスを渡してください。
+
+=item C<< Can't clone an object:
+          option isn't a HASH reference >>
+
+C<clone()>にオプションとして渡された引数のデータ型が不正です。
+何も渡さないか、渡すならハッシュリファレンスを渡してください。
+
+=item C<< Useless use private variable in void context >> （警告）
+
+C<is_defined_column_only()>, C<as_string()>, C<dump_header()>, C<dump_body()>が、voidコンテキストで呼ばれました。
+これらのメソッドは副作用がないため、警告を発して何も処理せずに終了しました。
+
+=item C<< Can't parse strings:
+          strings aren't defined >>
+
+C<parse()>に於いて、解析（パース）に失敗しました。
+引数を渡していないか、引数がC<undef>であるか、引数が空文字（C<q{}>）です。
+解析したい文字列を渡してください。
+
+=item C<< Can't parse strings:
+          element of lines (%d) isn't valid type >>
+
+C<parse()>の引数として渡された値の解析（パース）に失敗しました。
+解析したい文字列は、スカラ・スカラリファレンス・リスト・配列リファレンスのいずれかで渡してください。
+
+=item C<< Can't read a dictionary:
+          filename isn't defined or is empty >>
+
+C<read()>に於いて、読込に失敗しました。
+ファイル名がC<undef>であるか、或いは空文字（C<q{}>）です。
+読込・解析したいファイル名を渡してください。
+
+=item C<< Can't read the file (%s): (%s) >>
+
+C<read()>の引数として渡されたファイルの読込に失敗しました。
+L<File::Slurp|File::Slurp>クラスから送出された例外を捕捉して表示しています。
+
+ASCII以外の文字（キャラクタ）を含むパスを指定したい場合は、お使いのシステムのファイルシステムに適合した文字コードに変換してから、このメソッドの引数として渡してください。
+例えば、日本語版Win32環境では、C<cp932>にエンコードする必要があります。
+
+詳しくはL<Text::UTX::Simple|Text::UTX::Simple>のB<CAVEAT>節を参照してください。
+
+=item C<< Can't write a dictionary:
+          filename isn't defined or is empty >>
+
+C<write()>に於いて、書込に失敗しました。
+ファイル名がC<undef>であるか、或いは空文字（C<q{}>）です。
+書込したいファイル名を渡してください。
+
+=item C<< Can't convert column name into column index:
+          attempt to use LIST as names
+          (you should use an ARRAY reference) >>
+
+C<name_to_index()>に於いて、列名から列番号への変換に失敗しました。
+2つ以上の引数が与えられています。
+複数の列名を変換したい場合には、配列リファレンスを渡してください。
+
+=item C<< Can't convert column index into column name:
+          attempt to use LIST as indexes
+          (you should use an ARRAY reference) >>
+
+C<index_to_name()>に於いて、列番号から列名への変換に失敗しました。
+2つ以上の引数が与えられています。
+複数の列番号を変換したい場合には、配列リファレンスを渡してください。
+
+=item C<< Can't convert entry array into entry hash:
+          attempt to use LIST as names
+          (you should use an ARRAY reference) >>
+
+C<array_to_hash()>に於いて、行にある各列の値のリストからC<< { 列名 => 値 } >>ハッシュへの変換に失敗しました。
+2つ以上の引数が与えられています。
+複数の行を変換したい場合には、配列リファレンスを渡してください。
+
+=item C<< Can't convert entry hash into entry array:
+          attempt to use LIST as names
+          (you should use an ARRAY reference) >>
+
+C<hash_to_array()>に於いて、C<< { 列名 => 値 } >>ハッシュから行にある各列の値のリストへの変換に失敗しました。
+2つ以上の引数が与えられています。
+複数の行を変換したい場合には、配列リファレンスを渡してください。
+
+=item C<< Can't create an object:
+          option should have only one behavior key >>
+
+C<new()>に於いて、インスタンスの生成に失敗しました。
+オプションとして渡したハッシュリファレンスのキーについて、C<text>とC<file>の両方が存在します。
+文字列を解析（パース）するC<text>か、ファイルを読込・解析するC<file>のどちらか一方のみを指定してください。
+
+=item C<< Can't validate type:
+          option isn't a HASH reference >>
+
+C<as_string()>, C<dump_header()>, C<dump_body()>に於いて、各処理に失敗しました。
+オプションとして渡された引数のデータ型が不正です。
+何も渡さないか、渡すならハッシュリファレンスを渡してください。
+
+=item C<< Can't validate type:
+          type assignment isn't exclusive
+          (you ware assined multiple types below, %s) >>
+
+C<as_string()>, C<dump_header()>, C<dump_body()>に於いて、各処理に失敗しました。
+出力形式の指定方法が誤っています。具体的には、オプションとして渡されたハッシュリファレンスのうち、ハッシュ値が真であるC<scalar>, C<scalar_ref>, C<list>, C<array>, C<array_ref>, C<hash>, C<hash_ref>ハッシュキーが、複数存在します。
+ハッシュ値が真となるハッシュキーは、一つだけ指定するか、何も指定しないでください。
+
+=back
+
+
+=head2 C<Text::UTX::Simple::Header>クラス由来
+
+=over 4
+
+=item C<< Can't parse the header:
+          header strings isn't defined >>
+
+C<new()>, C<parse()>, C<read()>に於いて、ヘッダの解析（パース）に失敗しました。
+ヘッダ文字列が渡されていません。
+解析したい文字列を渡してください。
+
+=item C<< Can't parse the header:
+          header strings aren't valid >>
+
+C<new()>, C<parse()>, C<read()>に於いて、ヘッダの解析（パース）に失敗しました。
+ヘッダ文字列がUTX-Simple仕様に準拠していません。
+正しい文字列を指定してください。
+
+UTX-Simple仕様も参照してください。
+
+=item C<< Can't convert column name into column index:
+          column name isn't defined >>
+
+C<name_to_index()>や、またはこのメソッドを呼ぶC<hash_to_array()>, C<dump_body()>に於いて、列名から列番号への変換に失敗しました。
+列名（群の一部）がC<undef>です。
+
+=item C<< Can't convert column name into column index:
+          type of column name (%s) isn't valid >>
+
+C<index_to_name()>や、またはこのメソッドを呼ぶC<dump_body()>に於いて、列番号から列名への変換に失敗しました。
+列名（群の一部）のデータ型が不正です。スカラまたは配列リファレンスを渡してください。
+
+=item C<< Can't convert column index into column name:
+          column index isn't defined >>
+
+C<index_to_name()>に於いて、列名から列番号への変換に失敗しました。
+列名（群の一部）がC<undef>です。
+
+=item C<< Can't convert column index into column name:
+          type of column index (%d) isn't valid >>
+
+C<index_to_name()>に於いて、列名から列番号への変換に失敗しました。
+列名（群の一部）のデータ型が不正です。スカラまたは配列リファレンスを渡してください。
+
+=item C<< Can't convert entry array into entry hash:
+          entry array isn't defined >>
+
+C<array_to_hash()>に於いて、行にある各列の値のリストからC<< { 列名 => 値 } >>ハッシュへの変換に失敗しました。
+行（群の一部）がC<undef>です。
+
+=item C<< Can't convert entry array into entry hash:
+          type of entry array (%s) isn't an ARRAY reference >>
+
+C<array_to_hash()>に於いて、行にある各列の値のリストからC<< { 列名 => 値 } >>ハッシュへの変換に失敗しました。
+行（群の一部）のデータ型が不正です。配列リファレンスを渡してください。
+
+=item C<< Can't convert entry array into entry hash:
+          column index (%d) isn't defined on header >>
+
+C<array_to_hash()>に於いて、行にある各列の値のリストからC<< { 列名 => 値 } >>ハッシュへの変換に失敗しました。
+列名（群の一部）はヘッダで定義されていません。
+列名が正しいか、確認してください。
+
+=item C<< Can't convert entry hash into entry array:
+          entry hash isn't defined >>
+
+C<hash_to_array()>に於いて、C<< { 列名 => 値 } >>ハッシュから行にある各列の値のリストへの変換に失敗しました。
+行（群の一部）がC<undef>です。
+
+=item C<< Can't convert entry hash into entry array:
+          type of entry hash (%s) isn't a HASH reference >>
+
+C<hash_to_array()>に於いて、C<< { 列名 => 値 } >>ハッシュから行にある各列の値のリストへの変換に失敗しました。
+行（群の一部）のデータ型が不正です。ハッシュリファレンスを渡してください。
+
+=item C<< Can't convert entry hash into entry array:
+          column name (%s) isn't defined on header >>
+
+C<hash_to_array()>に於いて、C<< { 列名 => 値 } >>ハッシュから行にある各列の値のリストへの変換に失敗しました。
+行（群の一部）の列名（群の一部）はヘッダで定義されていません。
+列名が正しいか、確認してください。
+
+=item C<< Can't convert column name into column index:
+          column name at argument's offset (%d) isn't defined >>
+
+C<name_to_index()>や、またはこのメソッドを呼ぶC<hash_to_array()>, C<dump_body()>に於いて、列名から列番号への変換に失敗しました。
+列名（群の一部）がC<undef>です。
+
+=item C<< Can't convert column name into column index:
+          column name (%s) isn't defined on header >>
+
+C<name_to_index()>や、またはこのメソッドを呼ぶC<hash_to_array()>, C<dump_body()>に於いて、列名から列番号への変換に失敗しました。
+列名（群の一部）がヘッダで定義されていません。
+列名が正しいか、確認してください。
+
+=item C<< Can't convert column index into column name:
+          column index at argument's offset (%d) isn't defined >>
+
+C<index_to_name()>や、またはこのメソッドを呼ぶC<dump_body()>に於いて、列番号から列名への変換に失敗しました。
+列番号（群の一部）がC<undef>です。
+
+=item C<< Can't convert column index into column name:
+          column index (%d) isn't number >>
+
+C<index_to_name()>や、またはこのメソッドを呼ぶC<dump_body()>に於いて、列番号から列名への変換に失敗しました。
+列番号（群の一部）がヘッダで定義されていません。
+列番号が正しいか、確認してください。
+
+意図的にこの列番号を指定した場合で、この例外を送出させないようにする場合、C<is_defined_column_only()>メソッドでスイッチを偽にセットしてください。初期値は偽です。
+
+=item C<< Can't convert column index into column name:
+          column index (%d) past end of array >>
+
+C<index_to_name()>や、またはこのメソッドを呼ぶC<dump_body()>に於いて、列番号から列名への変換に失敗しました。
+列番号（群の一部）である負値は、列配列の範囲外を指しています。
+列番号が正しいか、確認してください。
+
+=item C<< Can't convert column index into column name:
+          column index (%d) isn't defined on header >>
+
+C<index_to_name()>や、またはこのメソッドを呼ぶC<dump_body()>に於いて、列番号から列名への変換に失敗しました。
+列番号（群の一部）がヘッダで定義されていません。
+列番号が正しいか、確認してください。
+
+意図的にこの列番号を指定した場合で、この例外を送出させないようにする場合、C<is_defined_column_only()>メソッドでスイッチを偽にセットしてください。初期値は偽です。
+
+=item C<< Can't parse the header:
+          language for proper column's definition isn't defined >>
+
+C<new()>, C<parse()>, C<read()>に於いて、ヘッダの解析（パース）に失敗しました。
+不正な列が見つかりました。
+固有列（4列目以降）の名称で原言語（C<source>）か目的言語（C<target>）を特定するための類別が記述されていません。
+C<foo/bar/baz>のように固有列を定義している可能性があります。
+C<source:foo/bar/target:baz>のように指定してください。
+
+=item C<< Can't parse the header:
+          proper column (%s) on language (%s) is duplicated >>
+
+C<new()>, C<parse()>, C<read()>に於いて、ヘッダの解析（パース）に失敗しました。
+不正な列が見つかりました。
+固有列（4列目以降）の列名に、同じ名前が存在します。
+C<source:foo/bar/foo>のように固有列を定義しています。
+
+=item C<< Can't parse the header:
+          source language (%s) isn't ISO 639-1 format >>
+
+C<new()>, C<parse()>, C<read()>に於いて、ヘッダの解析（パース）に失敗しました。
+指定された原言語はISO 639-1に存在しません。
+
+=item C<< Can't parse the header:
+          target language (%s) isn't ISO 639-1 format >>
+
+C<new()>, C<parse()>, C<read()>に於いて、ヘッダの解析（パース）に失敗しました。
+指定された目的言語はISO 639-1に存在しません。
+
+=item C<< Specified language (%s) isn't valid as ISO 639-1 format >>
+
+C<new()>, C<parse()>, C<read()>に於いて、ヘッダの解析（パース）に失敗しました。
+指定された言語はISO 639-1に存在しません。
+
+この例外は、内部的に送出されます。
+クラス外へは、原言語・目的言語を区別して送出されます。
+
+=item C<< Specified region (%s) isn't valid as ISO 3166 format >>
+
+C<new()>, C<parse()>, C<read()>に於いて、ヘッダの解析（パース）に失敗しました。
+指定された地域はISO 3166に存在しません。
+
+この例外は、内部的に送出されます。
+クラス外へは、原言語・目的言語を区別して送出されます。
+
+=back
+
+
+=head2 C<Text::UTX::Simple::Body>クラス由来
+
+=over 4
+
+=item C<< Can't create a new %s instance:
+          a back-link to parent doesn't exist >>
+
+C<new()>に於いて、インスタンスの生成に失敗しました。
+エントリの親（辞書インスタンス）へのバックリンクが存在しません。
+
+この例外は、内部処理に異常が生じた場合にのみ送出されます。
+通常通りC<< Text::UTX::Simple->new() >>する場合には発生しません。
+
+=item C<< Can't clone a %s instance:
+          a back-link to parent doesn't exist >>
+
+C<clone()>に於いて、インスタンスの複製に失敗しました。
+エントリの親（辞書インスタンス）へのバックリンクが存在しません。
+
+この例外は、内部処理に異常が生じた場合にのみ送出されます。
+通常通りC<Text::UTX::Simple>インスタンスをC<clone()>する場合には発生しません。
+
+=item C<< Can't sort entries:
+          this method isn't implemented >>
+
+C<sort()>に於いて、辞書内のエントリの並べ替えに失敗しました。
+このメソッドは現段階では未実装です。
+
+エントリの並べ替えをしたい場合には、さしあたっては以下のように実装してください。
+
+    my @sorted_rows = map {     # いわゆるSchwartz変換でソート済み列群を得る
+        $_->[0];
+    } sort {
+        $a->[1] cmp $b->[1];    # または適切なソートルーチンを使用する
+    } map {
+        [ $_, $_->[0] ];        # $_->[0]は、最左列（見出し語）を意味する
+    } @{ $utx->dump_body({array_ref => 1}) };   # 全ての列
+    $utx->clear();              # 一旦全ての行を消去してから、
+    $utx->push(\@sorted_rows);  # ソート済みの列をpushする
+
+ユーザ側へ実装をお願いする状態である現状について、お詫び致します。
+
+=item C<< Can't parse an entry:
+          argument's class (%s) differs from original's class (%s) >>
+
+C<push()>, C<pop()>, C<splice()>に於いて、要素の追加に失敗しました。
+追加しようとした要素（インスタンス）のクラスは、追加されようとしているインスタンスのクラスとは異なります。
+両クラスがis-a関係にある場合でも同様です。両クラス名は完全に一致している必要があります。
+
+この挙動について、is-a関係にある場合は正常に処理するという非互換的な修正を、将来行う可能性があります。
+
+=item C<< Can't parse elements:
+          deep recursion >>
+
+C<push()>, C<pop()>, C<splice()>に於いて、追加しようとした要素の解析（パース）に失敗しました。
+データ構造が複雑すぎます。参照（リファレンス）の深さは2階層までです。
+ARRAY to ARRAY（二重配列）やHASH to ARRAY（ハッシュの配列）などは処理出来ますが、それより深いデータ構造は解析しません。
+
+=item C<< Can't splice entries:
+          argument's columns (%s) differ from original's columns (%s) >>
+
+C<push()>, C<pop()>, C<splice()>に於いて、要素の追加に失敗しました。
+追加しようとした要素（インスタンス）は、追加されようとしている要素と、ヘッダの列定義が異なります。両列群は完全に一致している必要があります。
+
+この挙動について、スイッチにより正常に処理させるという機能追加を、将来行う可能性があります。
+
+=item C<< Can't parse an entry:
+          headword (first column) is void or is ineffective,
+          therefore, specified line (%d) was skipped >> （警告）
+
+C<parse()>に於いて、行の解析（パース）に失敗しました。
+見出し語（最左列）に、空文字（C<q{}>）または無効値（C<q{-}>）が指定されています。
+この行の解析は飛ばして処理します。
+解析処理全体を失敗させたわけではありません。
+正しく記述された他の行があれば、それは正常に解析出来ています。
+
+=item C<< Can't parse an entry:
+          headword (first column) is void or is ineffective,
+          therefore, specified element (%d) was skipped >> （警告）
+
+C<push()>, C<pop()>, C<splice()>に於いて、エントリの解析（パース）に失敗しました。
+見出し語（最左列）に、空文字（C<q{}>）または無効値（C<q{-}>）が指定されています。
+この要素の解析は飛ばして処理します。
+解析処理全体を失敗させたわけではありません。
+正しく指定された他の要素があれば、それは正常に解析出来ています。
+
+=item C<< Can't parse an entry:
+          headword (first column) looks like number,
+          therefore, specified line (%d) was skipped >> （警告）
+
+C<parse()>に於いて、行の解析（パース）に失敗しました。
+見出し語（最左列）に、数値として見なされる値が指定されています。
+この行は飛ばして処理します。
+解析処理全体を失敗させたわけではありません。
+正しく記述された他の行があれば、それは正常に解析出来ています。
+
+=item C<< Can't parse an entry:
+          headword (first column) looks like number,
+          therefore, specified element (%d) was skipped >> （警告）
+
+C<push()>, C<pop()>, C<splice()>に於いて、エントリの解析（パース）に失敗しました。
+見出し語（最左列）に、数値として見なされる値が指定されています。
+この要素の解析は飛ばして処理します。
+解析処理全体を失敗させたわけではありません。
+正しく指定された他の要素があれば、それは正常に解析出来ています。
+
+=item C<< Can't project columns:
+          offset (%d) past end of array >>
+
+C<dump_body()>に於いて、列の特定（投射）に失敗しました。
+オプションとして指定したC<< { columns => [列名または列オフセット値（群）] } >>に該当する列は、辞書に存在しません。
+
+=item C<< Can't select rows:
+          offset (%d) past end of array >>
+
+C<dump_body()>, C<consult()>に於いて、エントリ行の特定に失敗しました。
+メソッドのオプションとして指定した見出し語またはオフセット値（群）や、C<consult()>の引数として指定したオフセット値に該当する行は、辞書に存在しません。
+
+この挙動について、例外を返さずにC<undef>を返すという非互換的な修正を、将来行う可能性があります。
+
+=item C<< Can't select rows:
+          entry (%s) doesn't exist >>
+
+C<dump_body()>, C<consult()>に於いて、エントリ行の特定に失敗しました。
+メソッドのオプションとして指定したC<< { rows => [見出し語またはオフセット値（群）] } >>や、C<consult()>の引数として指定した見出し語に該当する行は、辞書に存在しません。
+
+この挙動について、例外を返さずにC<undef>を返すという非互換的な修正を、将来行う可能性があります。
+
+=item C<< Can't splice entries:
+          argument offset (%s) isn't numeric >> （警告）
+
+C<splice()>による辞書の編集が取り消されました。
+第1引数（削除を開始するオフセット値）が数値ではありません。
+
+=item C<< Can't splice entries:
+          offset past end of array >> （警告）
+
+C<splice()>による辞書の編集が取り消されました。
+第1引数（削除を開始するオフセット値）に指定された正値に該当する配列要素は存在しません。
+正値を指定する場合、その値が配列（辞書のエントリの行数）を超過しないようにしてください。
+
+=item C<< Can't splice entries:
+          modification of non-creatable array value attempted >> （警告）
+
+C<splice()>による辞書の編集が取り消されました。
+第1引数（削除を開始するオフセット値）に指定された負値に該当する配列要素は存在しません。
+負値を指定する場合、その絶対値が配列（辞書のエントリの行数）を超過しないようにしてください。
+
+=item C<< Can't splice entries:
+          argument length (%s) isn't numeric >> （警告）
+
+C<splice()>による辞書の編集が取り消されました。
+第2引数（削除する要素数）が数値ではありません。
+正しい数値を指定してください。
+
+=back
+
+
+=head1 AUTHOR （作者）
+
+=over 4
+
+=item MORIYA Masaki
+
+E<lt>moriya at ermitejo.comE<gt>,
+L<http://ttt.ermitejo.com/>
+
+=back
+
+はC<Text::UTX::Simple>モジュールの責任者です。
+
+UTX仕様およびUTX-Simple仕様はAAMT（Asia-Pacific Association for Machine Translation; アジア太平洋機械翻訳協会, L<http://www.aamt.info/>）の研究成果であり、全ての権利はAAMTが保有しています。
+
+
+=head1 LICENCE AND COPYRIGHT （使用条件と著作権）
+
+Copyright (c) 2008-2009, MORIYA Masaki E<lt>moriya at ermitejo.comE<gt>.
+All rights reserved.
+
+このモジュールはフリーソフトウェアです。
+あなたはこれをPerlと同じように自由に改変・配布することが出来ます。
+詳しくはL<perlgpl|perlgpl>およびL<perlartistic|perlartistic>を参照してください。
+
+
+=head1 VERSION （バージョン）
+
+このドキュメントは
+C<$Date: 2009-04-16 01:51:54 +0900 (木, 16 4 2009) $>
+にリリースされた
+C<Text::UTX::Simple>
+のバージョン0.02_00 ($Rev: 61 $)
+について記述しています。
+
+他言語版は以下にあります:
+
+=over 4
+
+=item English
+
+L<Text::UTX::Simple::Manual::Diagnostics|
+  Text::UTX::Simple::Manual::Diagnostics>
+
+=back

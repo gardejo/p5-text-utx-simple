@@ -1,0 +1,21 @@
+=head1 NAME
+
+Text::UTX::Simple::Manual::Header::V0_92 - manual: UTX-Simple 0.92のヘッダの仕様
+
+
+=head1 SYNOPSIS
+
+    # FOR INTERNAL USE ONLY
+    use Text::UTX::Simple::Version::Header::V0_92;
+
+
+=head1 DESCRIPTION
+
+UTX-S 0.92は、2008年11月13日に策定されました。
+この仕様は現在の最新版です。
+
+=head2 Specification of UTX-S 0.92 （UTX-S 0.92のヘッダの仕様）
+
+UTX-S 0.92のヘッダは、UTX-S 0.91と完全に互換性があります。
+詳細はL<Text::UTX::Simple::Manual::Header::V0_91_JA|
+Text::UTX::Simple::Version::Manual::V0_91_JA>を参照してください。

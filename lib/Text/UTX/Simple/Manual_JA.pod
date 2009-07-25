@@ -1,0 +1,87 @@
+=head1 NAME
+
+Text::UTX::Simple::Manual_JA - manual: Text::UTX::Simple説明書の表紙
+
+
+=head1 C<Text::UTX::Simple> manual table of contents （C<Text::UTX::Simple>説明書の目次）
+
+C<Text::UTX::Simple::Manual_JA>はL<Text::UTX::Simple|Text::UTX::Simple>の取扱説明書です。
+
+
+=over 4
+
+=item L<Text::UTX::Simple::Manual_JA|
+        Text::UTX::Simple::Manual_JA>
+
+このページです。
+
+=item L<Text::UTX::Simple_JA|
+        Text::UTX::Simple_JA>
+
+C<Text::UTX::Simple>クラス全般を説明しています。
+
+=item L<Text::UTX::Simple::Manual::ClassDiagram_JA （クラス図）|
+        Text::UTX::Simple::Manual::ClassDiagram_JA>
+
+C<Text::UTX::Simple>のクラス図を記述しています。
+
+B<註: クラス図はPNGフォーマットの画像ファイルをHTMLに埋め込んで提供しています>。
+
+=item L<Text::UTX::Simple::Manual::Diagnostics_JA （例外・警告の診断）|
+        Text::UTX::Simple::Manual::Diagnostics_JA>
+
+C<Text::UTX::Simple>が発生しうる例外や警告メッセージについて解説しています。
+
+=item L<Text::UTX::Simple::Manual::Appendix_JA （付録）|
+        Text::UTX::Simple::Manual::Appendix_JA>
+
+C<Text::UTX::Simple>の説明の付録です。
+
+=back
+
+
+=head1 AUTHOR （作者）
+
+=over 4
+
+=item MORIYA Masaki
+
+E<lt>moriya at ermitejo.comE<gt>,
+L<http://ttt.ermitejo.com/>
+
+=back
+
+はC<Text::UTX::Simple>モジュールの責任者です。
+
+UTX仕様およびUTX-Simple仕様はAAMT（Asia-Pacific Association for Machine Translation; アジア太平洋機械翻訳協会, L<http://www.aamt.info/>）の研究成果であり、全ての権利はAAMTが保有しています。
+
+
+=head1 LICENCE AND COPYRIGHT （使用条件と著作権）
+
+Copyright (c) 2008-2009, MORIYA Masaki E<lt>moriya at ermitejo.comE<gt>.
+All rights reserved.
+
+このモジュールはフリーソフトウェアです。
+あなたはこれをPerlと同じように自由に改変・配布することが出来ます。
+詳しくはL<perlgpl|perlgpl>およびL<perlartistic|perlartistic>を参照してください。
+
+
+=head1 VERSION （バージョン）
+
+このドキュメントは
+C<$Date: 2009-04-06 23:47:28 +0900 (月, 06 4 2009) $>
+にリリースされた
+C<Text::UTX::Simple>
+のバージョン0.02_00 ($Rev: 50 $)
+について記述しています。
+
+他言語版は以下にあります:
+
+=over 4
+
+=item English
+
+L<Text::UTX::Simple::Manual|
+  Text::UTX::Simple::Manual>
+
+=back

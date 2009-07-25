@@ -1,0 +1,10 @@
+#the quick brown fox jumps over the lazy dog.
+src00	tgt00	pos00	foo00	bar00	baz00	qux00
+#src10	tgt10	pos10	foo10	bar10	baz10	qux10
+src10	tgt10	pos10	foo10	bar10	baz10	qux10
+
+src20	tgt20	pos20	foo20	bar20	baz20	qux20
+src11	tgt11	pos11	foo11	bar11	baz11	qux11
+src21	tgt21	pos21	foo21	bar21	baz21	qux21
+multibyte character	マルチバイト文字	noun	-	-	-	-
+Asia-Pacific Association for Machine Translation	アジア太平洋機械翻訳協会	-	-	-	-	-

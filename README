@@ -1,0 +1,83 @@
+Text-UTX-Simple version 0.02_00
+
+
+INSTALLATION
+
+To install this library, run the following commands:
+
+    perl Makefile.PL
+    make
+    make test
+    make install
+
+Alternatively, to install with Module::Build,
+you can use the following commands:
+
+    perl Build.PL
+    ./Build
+    ./Build test
+    ./Build install
+
+
+DEPENDENCIES
+
+    perl 5.8.1 or later
+    'Attribute::Abstract'  => 0,
+    'Attribute::Alias'     => 0,
+    'Attribute::Protected' => 0,
+    'Attribute::Util'      => 0,
+    'Carp'                 => 0,
+    'Class::Inspector'     => 0,
+    'DateTime'             => 0,
+    'DateTime::TimeZone'   => 0,
+    'Encode'               => 0,
+    'English'              => 0,
+    'File::Slurp'          => 0,
+    'List::MoreUtils'      => 0,
+    'List::Util'           => 0,
+    'Locale::Country'      => 0,
+    'Locale::Language'     => 0,
+    'Readonly'             => 0,
+    'Regexp::Common'       => 0,
+    'Regexp::Common::time' => 0,
+    'Scalar::Util'         => 0,
+    'Storable'             => 0,
+    'Test::Exception'      => 0,
+    'Test::Harness'        => 0,
+    'Test::More'           => 0,
+    'Test::Warn'           => 0,
+    'Tie::IxHash'          => 0,
+
+
+COPYRIGHT AND LICENCE
+
+Copyright (c) 2008-2009, MORIYA Masaki
+All rights reserved.
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See perlgpl and perlartistic.
+
+
+DISCLAIMER OF WARRANTY
+
+BECAUSE THIS SOFTWARE IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
+FOR THE SOFTWARE, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN
+OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES
+PROVIDE THE SOFTWARE "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER
+EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE
+ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE SOFTWARE IS WITH
+YOU. SHOULD THE SOFTWARE PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL
+NECESSARY SERVICING, REPAIR, OR CORRECTION.
+
+IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
+WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+REDISTRIBUTE THE SOFTWARE AS PERMITTED BY THE ABOVE LICENCE, BE
+LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL,
+OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE
+THE SOFTWARE (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING
+RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A
+FAILURE OF THE SOFTWARE TO OPERATE WITH ANY OTHER SOFTWARE), EVEN IF
+SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGES.

@@ -1,0 +1,116 @@
+=head1 NAME （名称）
+
+Text::UTX::Simple::Manual::Appendix_JA - 説明書: Text::UTX::Simpleの付録
+
+
+=head1 APPENDIX （付録）
+
+=head2 Encoding of C<$filename> and C<$text> （ファイル名や解析対象文字列のエンコーディング）
+
+あなたはC<parse()>する文字列やC<read()>するファイルの中身を、事前にUTF-8形式にエンコードしておく必要があります。
+なぜなら、このモジュールはUTX-Simple仕様と昨今のPerlの潮流に則り、内部的にUTF-8形式で処理を行うためです。
+
+C<read()>に関して、あなたはC<$filename>の文字列についても、B<あなたのお使いのシステムに於けるファイル名のエンコーディング>と一致させる必要があります。
+
+あなたのシステムとC<$filename>のエンコーディングの組み合わせを、このモジュールが完全に推測することは難しいです。
+従って、このモジュールはC<$filename>を「そのままの形」で使い、適切なエンコーディングに変換する処理を行っていません。
+
+適切なエンコーディングの一例を、以下に掲げます。
+このスクリプトはUTF-8で保存されたものとします。
+
+    use strict;
+    use warnings;
+    use utf8;
+
+    use Carp;
+    use Encode;
+    use Encode::Guess;
+    use Text::UTX::Simple;
+    use Readonly;
+
+    # Windowsシリーズ日本語版環境でのファイル名
+    Readonly my $FILENAME_ENCODING  => 'cp932';
+
+    # Windowsシリーズ日本語版環境での主要なエンコーディング
+    Readonly my @SUSPECTS_ENCODINGS => qw(cp932 euc-jp 7bit-jis);
+
+    # ハードコードされたエンコーディングは、このスクリプトのそれに依存する
+    # この場合はUTF-8である
+    my $hard_coded_filename = 'テストファイル名.txt';
+    _encode_filename(\$hard_coded_filename);        # UTF-8からCP932へ
+    my $foo = Text::UTX::Simple->new({filename => $hard_coded_filename});
+    # 読み取り成功。$fooを使って何かを行う。
+
+    # 引数として渡された文字列のエンコーディングは、シェルのそれに依存する
+    # この場合はCP932（≒Shift JIS）である
+    my $filename_from_arguments = shift @ARGV;
+    exit
+        unless defined $filename_from_arguments;
+
+    _encode_filename(\$filename_from_arguments);    # CP932のまま
+    my $bar = Text::UTX::Simple->new({filename => $filename_from_arguments});
+    # 読み取り成功。$barを使って何かを行う。
+
+    # ファイル名を変換する
+    sub _encode_filename {
+        my $filename = shift;
+
+        my $encoding_of_filename
+            = guess_encoding($$filename, @SUSPECTS_ENCODINGS);
+        croak "Can't guess encoding: $encoding_of_filename"
+            unless ref $encoding_of_filename;
+        if ($encoding_of_filename->name() ne $FILENAME_ENCODING) {
+            $$filename = encode($FILENAME_ENCODING, $$filename);
+        }
+
+        return;
+    }
+
+なお、勿論のことですが、ファイル名の取り扱いについての注意は、本モジュールに限りません。
+
+
+=head1 AUTHOR （作者）
+
+=over 4
+
+=item MORIYA Masaki
+
+E<lt>moriya at ermitejo.comE<gt>,
+L<http://ttt.ermitejo.com/>
+
+=back
+
+はC<Text::UTX::Simple>モジュールの責任者です。
+
+UTX仕様およびUTX-Simple仕様はAAMT（Asia-Pacific Association for Machine Translation; アジア太平洋機械翻訳協会, L<http://www.aamt.info/>）の研究成果であり、全ての権利はAAMTが保有しています。
+
+
+=head1 LICENCE AND COPYRIGHT （使用条件と著作権）
+
+Copyright (c) 2008-2009, MORIYA Masaki E<lt>moriya at ermitejo.comE<gt>.
+All rights reserved.
+
+このモジュールはフリーソフトウェアです。
+あなたはこれをPerlと同じように自由に改変・配布することが出来ます。
+詳しくはL<perlgpl|perlgpl>およびL<perlartistic|perlartistic>を参照してください。
+
+
+=head1 VERSION （バージョン）
+
+このドキュメントは
+C<$Date: 2009-04-09 01:32:49 +0900 (木, 09 4 2009) $>
+にリリースされた
+C<Text::UTX::Simple>
+のバージョン0.02_00 ($Rev: 51 $)
+について記述しています。
+
+他言語版は以下にあります:
+
+=over 4
+
+=item English
+
+L<Text::UTX::Simple::Manual::Appendix|
+  Text::UTX::Simple::Manual::Appendix>
+
+=back

@@ -1,0 +1,123 @@
+=head1 NAME
+
+Text::UTX::Simple::Manual::Appendix - manual: appendices to Text::UTX::Simple
+
+
+=head1 APPENDIX
+
+=head2 Encoding of C<$filename> and C<$text>
+
+未訳。
+
+You must encode C<$filename> in advance, because C<$filename> should be
+obey an encoding of filename on your system.
+
+
+You must encode C<$filename> in advance, because C<$filename> should be
+obey an encoding of filename on your system.
+
+It is all but impossible, that C<Text::UTX::Simple> completely suspects
+encodings of combination of your system and your C<$filename>.
+Therefor, Foo::Bar::MFP uses C<$filename> as is, without converting encoding.
+
+勿論、ファイル名の取り扱いについての注意は、本クラスに限らない。
+
+The example of appropriate encoding is below.
+This script is saved with UTF-8.
+
+    use strict;
+    use warnings;
+    use utf8;
+
+    use Carp;
+    use Encode;
+    use Encode::Guess;
+    use Text::UTX::Simple;
+    use Readonly;
+
+    # The encoding of file name for Japanease edition of Windows series.
+    Readonly my $FILENAME_ENCODING  => 'cp932';
+
+    # Major encodings for Japanease edition of Windows series.
+    Readonly my @SUSPECTS_ENCODINGS => qw(cp932 euc-jp 7bit-jis);
+
+    # Depends on an encoding of script file.
+    # In this case, the encoding is 'UTF-8'.
+    my $hard_coded_filename = 'テストファイル名.txt';
+    _encode_filename(\$hard_coded_filename);        # from UTF-8 to CP932
+    my $foo = Text::UTX::Simple->new({filename => $hard_coded_filename});
+    # reading success. Somethning is done by using $foo.
+
+    # The encoding of the string given as an argument depends on that of shell.
+    # In this case, the encoding is 'CP932' ('Shift JIS' is almost equal)
+    my $filename_from_arguments = shift @ARGV;
+    exit
+        unless defined $filename_from_arguments;
+
+    _encode_filename(\$filename_from_arguments);    # stay CP932
+    my $bar = Text::UTX::Simple->new({filename => $filename_from_arguments});
+    # reading success. Somethning is done by using $bar.
+
+    # converts file name
+    sub _encode_filename {
+        my $filename = shift;
+
+        my $encoding_of_filename
+            = guess_encoding($$filename, @SUSPECTS_ENCODINGS);
+        croak "Can't guess encoding: $encoding_of_filename"
+            unless ref $encoding_of_filename;
+        if ($encoding_of_filename->name() ne $FILENAME_ENCODING) {
+            $$filename = encode($FILENAME_ENCODING, $$filename);
+        }
+
+        return;
+    }
+
+
+=head1 AUTHOR
+
+=over 4
+
+=item MORIYA Masaki
+
+E<lt>moriya at ermitejo.comE<gt>,
+L<http://ttt.ermitejo.com/>
+
+=back
+
+is responsible for
+C<Text::UTX::Simple>
+module.
+
+The UTX specification and the UTX-Simple specification
+are results of examination by AAMT
+(Asia-Pacific Association for Machine Translation, L<http://www.aamt.info/>);
+and all rights are reserved by AAMT.
+
+
+=head1 LICENCE AND COPYRIGHT
+
+Copyright (c) 2008-2009, MORIYA Masaki E<lt>moriya at ermitejo.comE<gt>.
+All rights reserved.
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See L<perlgpl|perlapi> and L<perlartistic|perlartistic>.
+
+
+=head1 VERSION
+
+This document describes version 0.02_00 ($Rev: 50 $) of
+C<Text::UTX::Simple>,
+released C<$Date: 2009-04-06 23:47:28 +0900 (月, 06 4 2009) $>.
+
+Other language edition of this document is available at:
+
+=over 4
+
+=item Japanese
+
+L<Text::UTX::Simple::Manual::Appendix_JA|
+  Text::UTX::Simple::Manual::Appendix_JA>
+
+=back

@@ -1,0 +1,1661 @@
+=head1 NAME （名称）
+
+Text::UTX::Simple_JA - UTX-Simpleファイル・文字列の入出力抽象化レイヤー
+
+
+=head1 VERSION （バージョン）
+
+このドキュメントは
+C<$Date: 2009-04-16 01:51:54 +0900 (木, 16 4 2009) $>
+にリリースされた
+C<Text::UTX::Simple>
+のバージョン0.02_00 ($Rev: 61 $)
+について記述しています。
+
+他言語版は以下にあります:
+
+=over 4
+
+=item English
+
+L<Text::UTX::Simple|
+  Text::UTX::Simple>
+
+=back
+
+
+=head1 SYNOPSIS （概要）
+
+    use Text::UTX::Simple;
+
+    my $utx = Text::UTX::Simple->new({filename => $filename});
+    my $string = $utx->as_string(); # UTX-Simple形式の文字列を得る
+    $utx->clear();                  # 全エントリーの消去
+
+    $utx = Text::UTX::Simple->new({text => $utx_formatted_text});
+    $utx->push([$row0, $row1]);     # 二重配列（行・列）をスタック
+    $utx->write($filename);         # UTX-Simple形式でファイルに書き込む
+
+
+=head1 DESCRIPTION （解説）
+
+このC<Text::UTX::Simple>モジュールは、UTX-Simple形式の文字列およびファイルに対する、解析（パース）・読込・表示（ダンプ）・書込の手段を提供します。
+このモジュールへのインターフェースはオブジェクト指向です。
+
+=head2 Concept （概念）
+
+=head3 This module is: （このモジュールは何か）
+
+=over 4
+
+=item *
+
+UTX-Simpleフォーマットのファイルや文字列の読み書きのための抽象化レイヤーです。
+
+=back
+
+=head3 This module is capable of: （このモジュールは何の役に立つか）
+
+=over 4
+
+=item *
+
+主には、辞書のコンバータのための基盤の提供。
+解析器（パーサー）や生成器（ライター）として使えます。
+
+=item *
+
+ファイルや文字列がUTX-Simple仕様に準拠しているかの確認（バリデーター）。
+
+=item *
+
+原言語の見出し語に相当する目的言語の訳語の辞書引き。
+
+=item *
+
+UTX-Simple辞書のエントリーの操作（追加・削除・並べ替え）。
+
+=back
+
+=head3 This module is NOT: （このモジュールは何でないか）
+
+=over 4
+
+=item *
+
+UTX-Simple形式の辞書と、翻訳ソフトウェアの独自形式のユーザー辞書との相互変換器（コンバーター）。
+その機能は、開発中の別のモジュールで提供します。
+
+=back
+
+
+=head2 What is UTX/UTX-Simple? （UTX/UTX-Simpleとは何か）
+
+=head3 Overview （概略）
+
+UTX (Universal Terminology eXchange)とは、機械翻訳ソフトのユーザー辞書のための公開された仕様です。
+
+その仕様はAAMT（Asia-Pacific Association for Machine Translation; アジア太平洋機械翻訳協会）が策定しています。
+
+=head3 Why UTX? （何故UTXを使うのか）
+
+機械翻訳を使いこなす秘訣の一つは、専門用語辞書を充実させることです。
+それは、一般的にはユーザーによる登録という形や、市販辞書の追加という形で実現します。
+しかし、辞書をシステム毎の独自形式でのみ保存していると、過去の資産の再利用は難しいです。
+そこで、UTXを中間形式として、異なるシステムの間で辞書を共有することが出来ます。
+それによって、辞書という資産の価値も高まるでしょう。
+また、UTXはユーザー間で辞書を共有するための基盤としても期待出来ます。
+
+=head3 Two specifications （二つの仕様）
+
+UTXには2つの仕様があり、一つはUTX-XMLであり、もう一つがUTX-Simpleです。
+AAMTは最終的にはUTX-XMLの仕様を策定する見込みですが、まずはUTX-Simpleの策定から始めています。
+
+
+=head2 Compliance （準拠）
+
+このライブラリーはUTX-S 0.90, 0.91, 0.92（UTX-Simple仕様バージョン0.90, 0.91, 0.92）のいずれにも概ね準拠しています。
+
+本バージョンを公開した時点でのUTX-Simpleの最新版は、バージョン0.92です。
+
+UTX-Simpleのバージョン毎の仕様には、基本的には互換性があります。
+ただし、0.90までと、0.91以降とは、本ライブラリーでは互換性がないものとして扱います。
+
+このライブラリーでは、それぞれのバージョン毎にバージョン固有の処理などを定義したモジュールを用意しています。
+仕様のうちそれぞれのバージョン毎で異なる部分については、その概要をバージョン毎のモジュールのPODで説明しています。
+さらに詳細な情報は、AAMTのウェブサイトを参照してください。
+
+
+=head2 The details of UTX-Simple （UTX-Simpleの詳細）
+
+UTX-SimpleはUTXの単純な実装であり、タブで区切られたテキストフォーマット（TSV: タブ区切り値）となっています。
+辞書ファイルはUTF-8でエンコードされています。
+
+
+=head2 The header and the body on UTX-Simple （UTX-Simpleのヘッダーとエントリー）
+
+UTX-Simple形式は、ヘッダー部(header)とエントリー部(entry, body)に大別されます。
+
+UTX-0.90までは、1行目をヘッダー行として扱い、残りの全ての行をエントリー行として扱います。
+UTX-0.91以降は、1行目と2行目をヘッダー行として扱い、残りの全ての行をエントリー行として扱います。
+
+
+=head2 Format of the header on UTX-Simple （UTX-Simpleのヘッダーの書式）
+
+それぞれのバージョン毎のモジュールに付属しているドキュメントをご覧ください。
+
+=over 4
+
+=item UTX-S 0.90
+
+L<Text::UTX::Simple::Manual::Header::V0_90_JA|
+  Text::UTX::Simple::Manual::Header::V0_90_JA>
+
+=item UTX-S 0.91
+
+L<Text::UTX::Simple::Manual::Header::V0_91_JA|
+  Text::UTX::Simple::Manual::Header::V0_91_JA>
+
+=item UTX-S 0.92
+
+L<Text::UTX::Simple::Manual::Header::V0_92_JA|
+  Text::UTX::Simple::Manual::Header::V0_92_JA>
+
+=back
+
+
+=head2 Format of the body on UTX-Simple （UTX-Simpleのエントリーの書式）
+
+UTX-Simpleのエントリーは、タブ（C<qq{\t}>）で各列に区切られた行です。
+コメント文字q{#}で始まる行は、コメント行と見なされます。
+
+各列には、その列に該当する値を記述します。
+ヘッダーの説明で触れたように、全てのUTX-Simple辞書では、1列目から3列目までの定義が固定となっています。
+1列目に原言語（見出し語）・2列目に目的言語（訳語）・3列目の原言語の品詞が入ります。
+列の数は自由で、ヘッダーで定義していない列を持つことも出来ます。
+
+列に該当する値がない場合、無効値であるC<q{-}>を記述します。
+同様に空文字（C<q{}>）を指定することも出来ますが、UTX-S仕様では、その場合の処理は実装系に委ねられています。
+
+C<Text::UTX::Simple>では、空文字はそのままの状態で保持することとしています。
+無効値C<q{-}>もそのまま表示します（解析した結果、C<undef>やC<q{}>になることはありません）。
+
+表示（ダンプ）時に空文字C<q{}>を別の文字に変換して表示することも出来ます。
+その場合には、C<set_complement_of_void_value()>メソッドを使ってクラス変数を切り替えてしてください。
+その場合でも、オブジェクトに保持している値自体は変換されません。
+
+
+=head1 METHODS （メソッド）
+
+
+=head2 Constructors （コンストラクター）
+
+=head3 C<< new >>
+
+=head4 C<< new() >>
+
+新しいC<Text::UTX::Simple>インスタンス（辞書オブジェクト）を生成します。
+最も基本的な列（原言語・目的言語・原言語の品詞）を規定したヘッダー情報のみを保持した、見出し語が何も格納されていない空の辞書を得られます。
+
+
+=head4 C<< new({text => $text}) >>
+
+新しいC<Text::UTX::Simple>インスタンスを生成し、さらにC<$text>で指定した文字列を解析（パース）した結果で辞書を更新します。
+この記述は、
+
+    $utx = Text::UTX::Simple->new({text => $text});
+
+以下の記述と等価です。
+
+    $utx = Text::UTX::Simple->new();    # 新しいオブジェクトを生成
+    $utx->parse({text => $text});       # UTX-Simple文字列を解析
+
+詳しくはL<parse()|/parse($utx_formatted_text)>を参照してください。
+
+=head4 C<< new({file => $filename}) >>
+
+新しいC<Text::UTX::Simple>インスタンスを生成し、さらにC<$filename>で指定したファイルを読み込み、中身の文字列を解析した結果で辞書を更新します。
+この記述は、
+
+    $utx = Text::UTX::Simple->new({file => $filename});
+
+以下の記述と等価です。
+
+    $utx = Text::UTX::Simple->new();    # 新しいオブジェクトを生成
+    $utx->read({file => $filename});    # UTX-Simpleファイルの読込と解析
+
+詳しくはL<read()|/read($filename)>を参照してください。
+
+=head4 C<< new(\%option) >>
+
+新しいC<Text::UTX::Simple>インスタンス（辞書）を生成し、さらにC<\%option>ハッシュリファレンスで指定した属性をヘッダーに設定します。
+
+指定可能なC<< ( 属性キー => 属性値 ) >>の関係は、以下の通りです。
+指定しなかった属性は、初期値が使われます。
+それぞれの属性の記述方法について、詳しくはL<parse()|/parse($utx_formatted_text)>の解説を参照してください。
+
+=over 4
+
+=item C<< version => STR >>
+
+この辞書が準拠するUTX-Simple仕様のバージョンを、文字列（C<STR>）で記述します。
+初期値はC<0.92>です。
+
+ここで指定した辞書の情報は、この後で処理するL<parse()|/parse($utx_formatted_text)>やL<read()|/read($filename)>メソッド（L<new()|/new>でC<text>, C<file>オプションを使用した場合を含みます）や、L<clone()|/clone>メソッドでの処理に影響します。
+
+例えば:
+
+    my $utx_0_90 = Text::UTX::Simple->new({ version => 0.90 });
+    $utx_0_90->parse($string_of_utx_0_92);  # 例外！
+
+上記の例では、解析しようとする文字列がUTX-S 0.92である場合、辞書インスタンスの持つUTX-S 0.90との互換性がないため、例外を送出します。
+
+従って、特別な理由がない限り、B<初期値以外の指定をすることは推奨しません>。
+仕様のバージョンが違うと、辞書インスタンス同士の結合などが容易には行えなくなるためです。
+
+    my $utx_0_90 = Text::UTX::Simple->new({
+        version => 0.90,
+        text    => $string_of_utx_0_90,
+    });
+    my $utx_0_92 = Text::UTX::Simple->new({
+        text    => $string_of_utx_0_92,
+    });
+    my $part_of_utx_0_90 = $utx_0_90->pop();
+    $utx_0_92->push($part_of_utx_0_90);     # 例外！
+
+その場合は、以下のように、一旦単純データ型に変換してから、追加してください。
+
+    # 1エントリー（インスタンスではない、行と列の二重配列）
+    my $entry_0_90 = $part_of_utx_0_90->dump_entries();
+    $utx_0_92->push($entry_0_90);           # 例外なし
+
+=item C<< source => STR >>
+
+この辞書の原言語（source language; 翻訳元の言語）を、文字列（C<STR>）で記述します。
+初期値はC<en>（英語）です。
+後でL<parse()|/parse($utx_formatted_text)>やL<read()|/read($filename)>するか、或いはC<new()>のC<< { text => $text } >>による解析やC<< { file => $filename } >>による読込を行わない場合（つまりL<new()|/new>だけでヘッダーを定義する場合）には、B<ここで言語を必ず指定してください>。
+
+=item C<< target => STR >>
+
+この辞書の目的言語（target language; 翻訳先の言語）を、文字列（C<STR>）で記述します。
+初期値はC<undef>で、単言語辞書を表現しています。
+対訳辞書で、C<source>と同様にL<new()|/new>だけでヘッダーを定義する場合には、B<ここで言語を必ず指定してください>。
+
+=item C<< column => STR or ARRAYREF >>
+
+この辞書のユーザー定義列（4列目以降の列）の定義を、文字列（C<STR>）または配列リファレンス（C<ARRAY reference>）で記述します。
+初期値はC<undef>で、ユーザー定義列を持ちません。
+
+配列リファレンスでは、以下のように指定します。
+
+    my $utx = Text::UTX::Simple->new({  # 暗黙的に最新版（0.92）を指定
+        column    => [qw(foo bar baz)],
+    });
+
+UTX-S 0.90までは、ユーザー定義列の属性名がC<source:>またはC<target:>で始まる必要がありますので、注意してください。
+
+    my $utx = Text::UTX::Simple->new({
+        version => 0.90,                # 明示的にバージョンを指定
+        # column  => [qw(foo bar baz)], # エラー！
+        column  => [qw(source:foo source:bar target:baz)],
+    });
+
+文字列では、L<parse()|/parse($utx_formatted_text)>と同様、UTX-Sのバージョンにより受け付け可能な文字列が異なりますので、注意してください。
+
+    my $utx = Text::UTX::Simple->new({  # 暗黙的に最新版（0.92）を指定
+        column    => do { join "\t", qw(foo bar baz) },
+    });
+
+例えば、UTX-S 0.90は以下のように指定する必要があります。
+
+    my $utx = Text::UTX::Simple->new({
+        version => 0.90,                # 明示的にバージョンを指定
+        # column    => do { join "\t", qw(foo bar baz) },   # エラー！
+        # column  => 'foo/bar/baz',                         # エラー！
+        column  => 'source:foo/bar/target:baz',
+    });
+
+=item C<< time_zone => STR >>
+
+この辞書を作成・編集する計算機が動いているタイムゾーンを、文字列（C<STR>）で記述します。
+初期値はC<local>です。
+文字列ではL<DateTime::TimeZone|DateTime::TimeZone>で使用可能な値を入力する必要があります。
+
+特別な理由がない限り、B<初期値以外の指定をすることは推奨しません>。
+初期値ではお使いの計算機が稼働する地域の標準時が用いられます。
+このため、例えば東京で稼働する計算機のために、わざわざC<Asia/Tokyo>と指定する必要はありません。
+別の地域の標準時や、UTC（協定世界時）を用いたい場合にのみ指定することが妥当でしょう。
+
+以下は一例です。
+
+    # UTX-Simple version 0.90
+    my $utx = Text::UTX::Simple->new({
+        source    => 'en-US',
+        target    => 'ja-JP',
+        time_zone => 'Asia/Tokyo',
+        column    => [qw(src:plural src:3sp src:past src:pastp tgt)],
+    });
+
+=item C<< miscellany => HASH reference to ARRAY reference >>
+
+この辞書の追加情報（作者・ライセンスなど）の定義を、配列リファレンス（C<ARRAY reference>）へのハッシュリファレンス（C<HASH reference>）で記述します。
+初期値はC<undef>で、追加情報を持ちません。
+
+追加情報の値は文字列（C<STR>）で指定します。
+C<undef>を指定した場合、当該情報は辞書に記述されません。
+
+    my $utx = Text::UTX::Simple->new({
+        miscellany => [
+            { foo => 1 },
+            { bar => undef },   # 辞書に保存されない
+        ],
+    });
+
+=item C<< miscellany => Tie::IxHash object >>
+
+上記のC<miscellany>へは、L<Tie::IxHash|Tie::IxHash>またはそのサブクラスのインスタンスを渡すことも出来ます。
+
+    my $utx = Text::UTX::Simple->new({
+        miscellany => Tie::IxHash->new(
+            foo => 1,
+            bar => undef,       # 辞書に保存されない
+        ),
+    });
+
+=item 上記以外の情報
+
+上記以外の情報は、無視されます。
+例えば、以下のように作成した場合、C<foo>とC<bar>は辞書に定義されません。
+
+    my $utx = Text::UTX::Simple->new({
+        source    => 'en-US',
+        target    => 'ja-JP',
+        foo       => 1,
+        bar       => 2,
+    });
+
+追加の情報（作者・ライセンスなど）を記述する場合、C<miscellany>を指定してください。
+
+=back
+
+=head3 C<< clone >>
+
+=head4 C<< clone() >>
+
+既存のC<Text::UTX::Simple>インスタンス（辞書）を元にして、新しいインスタンスを複製して生成します。
+既存のインスタンスと完全に同じ辞書が得られます。
+
+=head4 C<< clone(\%option) >>
+
+既存のC<Text::UTX::Simple>インスタンス（辞書）を元にして、新しいインスタンスを複製して生成します。
+さらに、C<\%option>ハッシュリファレンスで指定した属性をヘッダーにB<上書き>します。
+
+指定可能な属性は、L<new()|/new>と同じです。
+それぞれの初期値は、複製元の辞書の値となります。
+以下にその例を示します。
+
+    my $original = Text::UTX::Simple->new({
+        source => 'en',
+        target => 'ja',
+    });
+    my $clone    = $original->clone({
+        source => 'eo', # 上書きされる
+        # targetは'ja'のまま
+        # その他の情報（UTX-Simpleのバージョンなど）も$originalのまま
+    });
+
+追加情報（C<miscellany>）について、もう少し詳しく述べます。
+新しい追加情報を指定する場合は、L<new()|/new>での指定と同様に情報が追加されます。
+既存の追加情報と同じ追加情報を指定する場合、値が上書きされます。
+既存の追加情報を削除したい場合、ハッシュ値をC<undef>としてください。
+既存の追加情報自体は残したいが、値を空にしたい場合、空文字（C<q{}>）を指定してください。
+
+    my $original = Text::UTX::Simple->new({
+        miscellany => [
+            { copyright => '(c) 2008 John Doe' },
+            { license   => 'GNU Lesser GPL version 3' },
+            { comment   => 'The quick brown fox jumps over the lazy dog' },
+            { foo       => 1 },
+        ],
+    });
+    my $clone = $original->clone({
+        miscellany => [
+            { copyright => '(c) 2009 John Doe' },   # 書き換え
+                                                    # licenseは$originalと同じ
+            { comment   => '' },                    # 空白で書き換え
+            { foo       => undef },                 # foo自体を削除
+            { bar       => 2 },                     # 新規に追加
+        ],
+    });
+
+=head2 Accessor/mutator for class variable （クラス変数へのアクセッサー・ミューテーター）
+
+=head3 C<< is_defined_column_only >>
+
+UTX-Simple仕様では、ヘッダーで定義していない列もエントリーに持つことが出来ます。
+ヘッダーで定義されていない列を取り扱う場合、列番号が列名に該当しない場合が有り得ます。
+このメソッドは、上記の場合の挙動を制御するクラス変数をスイッチするミューテーターであり、かつ、クラス変数を取得するアクセッサーです。
+
+真の場合には、例外を送出します。
+偽の場合には、その場限りの列名をでっち上げます。例えば、C<42(UNDEFINED)>のように。
+初期値は偽です。
+
+=head4 C<< is_defined_column_only() >>
+
+クラス変数の値を取得します。
+
+=head4 C<< is_defined_column_only(BOOL) >>
+
+クラス変数に値を設定します。
+初期値は偽です。
+
+
+=head2 Parser/Reader （パーサー, リーダー）
+
+=head3 C<< parse($utx_formatted_text) >>
+
+引数で指定した文字列を、UTX-Simple仕様に基づいて解析（パース）します。
+
+引数のデータ型には、以下の4種類があります。
+
+=over 4
+
+=item C<SCALAR> （スカラー）
+
+改行（C<m{\r?\n}>）で各行を区切った文字列を渡します。
+
+=item C<SCALARREF> （スカラーリファレンス）
+
+スカラーと同様ですが、リファレンスで渡すことも出来ます。
+巨大な文字列を渡す場合、こちらの方が効率が良いです。
+
+=item C<LIST> （リスト）
+
+文字列を含む各行を、リストの各要素として渡します。
+要素に改行が含まれていると、意図しない動作を引き起こす可能性が高いです。
+将来的には例外を送出する予定です。
+
+=item C<ARRAYREF> （配列リファレンス）
+
+リストと同様ですが、配列リファレンスで渡すことも出来ます。
+巨大なリストを渡す場合、こちらの方が効率が良いです。
+
+=back
+
+文字列の1行目はヘッダーとして扱われ、残りの行はエントリーとして扱われます。
+ヘッダーの書式についてはL<Format of the header on UTX-Simple （UTX-Simpleのヘッダーの書式） |/Format of the header on UTX-Simple （UTX-Simpleのヘッダーの書式） >節を、エントリーの書式についてはL<Format of the body on UTX-Simple （UTX-Simpleのエントリーの書式） |/Format of the body on UTX-Simple （UTX-Simpleのエントリーの書式） >節を、それぞれ参照してください。
+
+書式に適合しない文字列が渡された場合、例外を送出します。
+ヘッダーの各要素についてもそれぞれ検証を行い、不正な値であれば、同様に例外を送出します。
+例えば、存在しない言語名を指定した場合などです。
+ただし、更新日時についての検証は、現在は完全なものではありません。
+
+C<parse()>は既存のヘッダーとエントリーをB<上書き>します（追記しません）。
+エントリーを追加する場合には、C<parse()>でなくてL<push()|/push($entries)>, L<unshift()|/unshift($entries)>, L<splice()|/splice($offset, $length, $entries)>を使ってください。
+
+    $utx = Text::UTX::Simple->new({ text => $text });
+    $utx->parse($additional_entries); # 誤り！ 上書きされる
+    $utx->push($additional_entries);  # 追記
+
+警告：このモジュールは文字列がutf-8フラグ付きの文字列であることを期待しています。
+そうでない場合には予期せぬ障害が発生するおそれがあります。
+つきましては、ASCII以外の文字列を渡す場合には、必ずUTF-8に変換してから文字列を渡してください。
+
+=head3 C<< read($filename) >>
+
+引数で指定したファイルを読み込み、ファイルの中身の文字列をUTX-Simple仕様に基づいて解析（パース）します。
+
+C<$filename>がC<undef>であったり、空（C<q{}>）であったり、存在しないパスであったりすると、例外を送出します。
+
+ファイル読込はL<File::Slurp|File::Slurp>を使用していますので、詳細はそちらを参照してください。
+また、解析の詳細はL<parse()|/parse($utx_formatted_text)>を参照してください。
+
+
+=head2 Dumpers/Writer （ダンパー, ライター）
+
+=head3 C<< as_string >>
+
+=head4 C<< as_string() >>
+
+辞書の内容をUTX-Simple形式の文字列（C<STR>）で返します。
+
+=head4 C<< as_string({ scalar_ref => 1 }) >>
+
+辞書の内容をUTX-Simple形式の文字列（C<STR>）へのリファレンス（C<SCALARREF>）で返します。
+
+=head3 C<< write >>
+
+=head4 C<< write($filename) >>
+
+辞書の内容をUTX-Simple形式の文字列（C<STR>）にして、C<$filename>で指定したファイルへ書き込みます。
+C<$filename>が指定されていないか、空文字（C<q{}>）であるか、存在しないパスの場合、例外を送出します。
+C<$filename>が既に存在している場合でも、上書きします。
+
+=head4 C<< write($filename, { protect => 1 }) >>
+
+C<write($filename)>と同じですが、C<$filename>が既に存在している場合には、上書きしません。
+その際、例外は送出しません。
+
+=head3 C<< dump_header >>
+
+辞書のヘッダーを返します。
+
+=head4 C<< dump_header() >>
+
+リストコンテキストでは各行のリスト（C<LIST>）を、スカラーコンテキストではそのリストを配列リファレンス（C<ARRAYREF>）で、それぞれ返します。
+
+=head4 C<< dump_header(\%option) >>
+
+返値のデータ型と改行の有無を、C<\%option>ハッシュリファレンスで指定出来ます。
+オプションについては、L<Options of dumpers （ダンパーのオプション）|/Options of dumpers （ダンパーのオプション）>節を参照してください。
+
+=head3 C<< dump_entries >>
+
+=head4 C<< dump_entries() >>
+
+辞書のエントリーの全てを返します。
+リストコンテキストでは行・列を示す二重配列をリスト（C<LIST>）で、スカラーコンテキストではそのリストを配列リファレンス（C<ARRAYREF>）で、それぞれ返します。
+
+    use YAML::Syck;
+    my $utx = Text::UTX::Simple->new();
+    $utx->push([ [qw(foo bar noun)], 
+                 [qw(baz qux verb)], ]);
+    print Dump $utx->dump_entries();
+
+の結果は、以下のようになります。
+
+    --- 
+    - foo
+    - bar
+    - noun
+    --- 
+    - baz
+    - qux
+    - verb
+
+辞書にエントリーが存在しない場合、C<undef>を返します。
+
+=head4 C<< dump_entries(\@rows) >>
+
+C<dump_hentries()>とほぼ同じですが、C<\@rows>で対象の見出し語、または対象の行のみを抽出した結果、つまり選択（セレクション）の結果を返します。
+
+C<\@rows>には、辞書の見出し語（エントリーの最左列）を示す文字列（C<STR>）か、辞書エントリー配列のインデックスを示す整数（C<INT>）を複数指定することが出来ます。
+辞書に見出し語に該当するエントリーが複数存在する場合、そのいずれも抽出します。
+見出し語により抽出したエントリーと、インデックスにより抽出したエントリーが同じである場合でも、当該エントリーが複数回抽出されることはありません。
+抽出する行の順番は、C<\@rows>で指定した順番です。辞書エントリー内の順番によりません。
+
+C<\@rows>で指定したエントリーが存在しない場合は、例外を送出します。
+この挙動について、例外を返さずに、C<@rows>の当該要素を読み飛ばすという非互換的な修正を、将来行う可能性があります。
+
+=head4 C<< dump_entries(\%option) >>
+
+返値のデータ型と、改行の有無と、抽出する列を、C<\%option>ハッシュリファレンスで指定出来ます。
+オプションについては、L<Options of dumpers （ダンパーのオプション）|/Options of dumpers （ダンパーのオプション）>節を参照してください。
+
+=head4 C<< dump_entries(\@rows, \%option) >>
+
+C<< dump_entries(\%option) >>と同様に、返値のデータ型と、改行の有無と、抽出する列を、C<\%option>で指定出来ます。
+
+
+=head3 C<< consult($entry) >>
+
+辞書を簡易的に探索するメソッドです。
+原言語のC< $entry >（見出し語）に該当する目的言語の訳語を返します。
+C<$entry>には、辞書の見出し語を文字列（C<STR>）で指定します。
+C<$entry>をエントリー配列のオフセット値（C<INT>）で指定することも可能です。
+
+スカラーコンテキストの場合、辞書で最初に見つかった見出し語の訳語を文字列（C<STR>）で返します。
+リストコンテキストの場合、辞書で見つかった訳語をリスト（C<LIST>）で返します。
+
+C<$entry>で指定したエントリーが存在しない場合は、例外を送出します。
+この挙動について、例外を返さずにC<undef>を返すという非互換的な修正を、将来行う可能性があります。
+
+このメソッドは、C<< dump_entries( [$entry], { columns => ['target'] } ) >>の結果を編集したものとほぼ等価です。
+
+
+=head2 Options of dumpers （ダンパーのオプション）
+
+ダンパーメソッドでは、返値の値をハッシュリファレンス（C<HASHREF>）のオプションで指定出来ます。
+
+=head3 With or without new line (C<\n>) （改行の有無）
+
+=over 4
+
+=item C<< say => BOOL >>
+
+真の場合、各行の末尾に改行文字（C<\n>）を付与します。
+
+=back
+
+=head3 Data-types （データ型）
+
+=over 4
+
+=item C<< scalar => BOOL >>
+
+真の場合、各行の末尾に改行文字（C<\n>）を自動で付与し、文字列（C<STR>）で返します。
+暗黙的に改行を加えますので、C<< say => 1 >>は無視されます。
+
+=item C<< scalar_ref => BOOL >>
+
+C<scalar>とほぼ同じですが、スカラーリファレンス（C<SCALARREF>）で返します。
+
+=item C<< list => BOOL >>
+
+真の場合、各行をリスト（C<LIST>）で返します。
+スカラーコンテキストでは、Perlの仕様により、行数を示す数値（C<INT>）が返りますので、留意してください。
+
+=item C<< array_ref => BOOL >>
+
+真の場合、各行を配列リファレンス（C<ARRAYREF>）で返します。
+
+=item C<< hash => BOOL >>
+
+L<dump_header()|/dump_header>では指定出来ません。何も指定しなかった時の返値と等価です。
+
+真の場合、エントリーの各行を、C<< { 列名 => 値, 列名 => 値, ... } >>のハッシュリファレンス（C<HASHREF>）とし、その行群をリスト（C<LIST>）で返します。
+C<hash>という名称にかかわらず、ハッシュ（C<HASH>）ではなくリスト（C<LIST>）が返ることに留意してください。
+以下のテストは合格します。
+
+    use Test::More;
+    my $utx = Text::UTX::Simple->new();
+    $utx->push([ [qw(foo bar noun)], 
+                 [qw(baz qux verb)], ]);
+    is_deeply( [ $utx->dump_entries({ hash => 1 }) ],
+               [ [ { 'src' => 'foo', 'tgt' => 'bar', 'src:pos' => 'noun' } ],
+                 [ { 'src' => 'baz', 'tgt' => 'qux', 'src:pos' => 'verb' } ], ],
+               'hash' );
+
+=item C<< hash_ref => BOOL >>
+
+L<dump_header()|/dump_header>では指定出来ません。何も指定しなかった時の返値と等価です。
+
+C<hash>とほぼ同じですが、真の場合、行群は配列リファレンス（C<ARRAYREF>）を返します。
+C<hash_ref>という名称にかかわらず、ハッシュリファレンス（C<HASH reference>）ではなく配列リファレンス（C<ARRAYREF>）が返ることに留意してください。
+以下のテストは合格します。
+
+    is_deeply( $utx->dump_entries({ hash_ref => 1 }),
+               [ [ { 'src' => 'foo', 'tgt' => 'bar', 'src:pos' => 'noun' } ],
+                 [ { 'src' => 'baz', 'tgt' => 'qux', 'src:pos' => 'verb' } ], ],
+               'hash_ref' );
+
+=back
+
+=head3 Column projection （列の投影）
+
+=over 4
+
+=item C<< columns => \@columns >>
+
+L<dump_header()|/dump_header>では指定出来ません。何も指定しなかった時の返値と等価です。
+
+L<dump_entries()|/dump_entries>で、C<\@columns>で指定した列を投影（プロジェクション）した結果を返します。
+
+C<\@columns>には、共通で存在する列（C<source>, C<target>, C<pos>）やヘッダーで指定した列名を示す文字列（C<STR>）か、列のインデックスを示す整数（C<INT>）を複数指定することが出来ます。
+列名により抽出した列と、インデックスにより抽出した列が同じである場合でも、当該列が複数回抽出されることはありません。
+抽出する行の順番は、C<\@columns>で指定した順番です。辞書の列の順番によりません。
+
+C<\@columns>で指定した列がヘッダーで定義されていない場合でも、初期値では例外を送出しません。
+UTX-Simple仕様では、ヘッダーで定義していない列もエントリーに持つことが出来る、という点に留意してください。
+この場合に例外を送出させるには、C< is_defined_column_only(TRUE) >としてクラス変数をスイッチしてください。
+
+C<\@columns>で指定した列が各エントリー（行）に存在しない場合は、例外を送出します。
+或る行では3列が、或る行では5列が存在している辞書について、4列目を投影する場合などに該当します。
+この挙動について、L<parse()|/parse($utx_formatted_text)>などの解析時やL<push()|/push($entries)>などのエントリー追加時などに、全てのエントリー（行）が同じ数の列を持つように自動で更新するためのスイッチを、今後導入する予定があります。
+
+=back
+
+=head3 Multiple assignment （多重指定）
+
+これらのオプションは、C<say>と、データ型のグループと、C<columns>について、同時に使用出来ます。
+
+    my $header_lines = $utx->dump_header({
+        say        => 1,
+        scalar_ref => 1,
+        columns    => [qw(src tgt)]
+    });
+
+これに対して、データ型のグループは同時に使用出来ません。
+例えば、以下の場合は例外を送出します。
+
+    my $header_lines = $utx->dump_header({
+        say        => 1,
+        scalar_ref => 1,
+        array_ref  => 1,
+        columns    => [qw(src tgt)]
+    });
+
+
+=head2 Accessors for the header （ヘッダーの属性へのアクセッサー）
+
+=head3 C<< get_columns() >>
+
+辞書の列名群を返します。
+列名には、標準の1～3列目と、あれば固有の4列目以降の全てを含みます。
+スカラーコンテキストで呼んだ場合、配列リファレンス（C<ARRAYREF>）で返します。
+リストコンテキストで呼んだ場合、リスト（C<LIST>）で返します。
+
+=head3 C<< get_specification() >>
+
+辞書の形式（フォーマット）名を文字列（C<STR>）で返します。
+形式は基本的には固定なので、UTX-Simple形式を意味するC<UTX-S>が返るでしょう。
+
+=head3 C<< get_version() >>
+
+辞書の形式（フォーマット）のバージョン番号を文字列（C<STR>）で返します。
+
+=head3 C<< guess_version($string) >>
+
+指定した文字列（C<$string>）を簡易的に解析し、辞書の形式（フォーマット）のバージョン番号を類推し、文字列（C<STR>）で返します。
+
+=head3 C<< get_source() >>
+
+辞書の原言語を文字列（C<STR>）で返します。
+文字列の書式についてはL<parse()|/parse($utx_formatted_text)>を参照してください。
+
+=head3 C<< get_target() >>
+
+辞書の目的言語を文字列（C<STR>）で返します。
+目的言語が存在しない場合、C<undef>を返します。
+単言語辞書の場合、目的言語が存在しないでしょう。
+文字列の書式についてはL<parse()|/parse($utx_formatted_text)>を参照してください。
+
+=head3 C<< get_alignment() >>
+
+辞書の原言語・目的言語の組み合わせを文字列（C<STR>）で返します。
+それぞれの言語はL<get_source()|/get_source()>とL<get_target()|/get_target()>で別々に取得することも出来ます。
+文字列の書式についてはL<parse()|/parse($utx_formatted_text)>を参照してください。
+
+=head3 C<< get_miscellany() >>
+
+辞書のその他の情報を返します。
+リストコンテキストではハッシュ（C<HASH>）を、スカラーコンテキストではハッシュリファレンス（C<HASH reference>）を、それぞれ返します。
+
+=head3 C<< get_last_updated() >>
+
+辞書の最終更新日時をISO 8601形式の文字列（C<STR>）で返します。
+文字列の書式についてはCL<parse()|/parse($utx_formatted_text)>を参照してください。
+
+
+=head2 Utilities for the header （ヘッダーの各種機能）
+
+=head3 C<< get_number_of_columns() >>
+
+ヘッダーで定義された、辞書の列名群の数を返します。
+列名には、標準の1～3列目（と、存在するならユーザー定義の4列目以降の全て）を含みます。
+
+UTX-Simple仕様では、ヘッダーで定義していない列もエントリーに持つことが出来る、という点に留意してください。
+
+=head3 C<< is_same_format_as($instance) >>
+
+自身と引数の両インスタンスが同じ形式（フォーマット）の辞書であれば真を、そうでなければ偽を返します。
+使用例は以下の通りです。
+
+    if ($one_dictionary->is_same_format($other_dictionary)) { ... }
+
+=head3 C<< index_to_name($column_indexes) >>
+
+C<name_to_index()>の反対です。
+引数C<$column_indexes>で指定した列インデックス（C<INT>またはそのC<ARRAYREF>）を、該当する列名（C<STR>）に変換して返します。
+ユーザーがこのメソッドを明示的に呼ぶことは、あまりないでしょう。
+
+=head3 C<< name_to_index($column_names) >>
+
+C<index_to_name()>の反対です。
+引数C<$column_names>で指定した列名（C<STR>またはそのC<ARRAYREF>）を、該当する列インデックス（C<INT>）に変換して返します。
+ユーザーがこのメソッドを明示的に呼ぶことは、あまりないでしょう。
+
+=head3 C<< array_to_hash($entry_array) >>
+
+C<hash_to_array()>の反対です。
+引数C<$entry_array>で列要素（C<ARRAYREF>）として指定したエントリーを、C<< { 列名 => 値 } >>のハッシュリファレンス（C<HASHREF>）に変換して返します。
+ユーザーがこのメソッドを明示的に呼ぶことは、あまりないでしょう。
+
+=head3 C<< hash_to_array($entry_hash) >>
+
+C<array_to_hash()>の反対です。
+引数C<$entry_hash>でC<< { 列名 => 値 } >>のハッシュリファレンス（C<HASHREF>）として指定したエントリーを、列要素（C<ARRAYREF>）に変換して返します。
+ユーザーがこのメソッドを明示的に呼ぶことは、あまりないでしょう。
+
+
+=head2 Accessor for the entries （エントリーへのアクセッサー）
+
+=head3 C<< get_complement_of_void_value() >>
+
+表示（ダンプ）時にエントリーの空文字C<q{}>を補完する文字（C<STR>）は、クラス変数として保持しています。
+このメソッドは、その補完文字を取得するものです。
+
+=head2 Mutator for entries （エントリーへのミューテーター）
+
+=head3 C<< set_complement_of_void_value($character) >>
+
+表示（ダンプ）時にエントリーの空文字C<q{}>を補完する文字（C<$character>）を、クラス変数に設定します。
+初期値は空文字（q{}）です。
+
+この値は解析（パース）時には影響を及ぼしません。
+例えばC<foobar>を補完文字に設定した状態でC<foobar>を含む文字列を解析した場合でも、エントリーの値はC<foobar>となり、空文字（C<q{}>）などにはなりません。
+
+特段の理由がない限りは、初期値のままとすることをお勧めします。
+
+
+=head2 Utility for entries （エントリーの機能）
+
+=head3 C<< get_number_of_entries() >>
+
+辞書のエントリーの数（行）を数値（C<INT>）で返します。
+コメントアウトされた行は数えません。
+L<get_line_of_entries()|/get_line_of_entries()>も参照してください。
+
+
+=head3 C<< get_line_of_entries() >>
+
+辞書のエントリーの数（行）を数値（C<INT>）で返します。
+コメントアウトされた行も数えます。
+L<get_number_of_entries()|/get_number_of_entries()>も参照してください。
+
+
+=head2 Manipulators for entries （エントリーの操作）
+
+辞書のエントリーは内部的には配列のように格納されています。
+従って、Perlと同じようにC<push>, C<pop>, C<unshift>, C<shift>, C<splice>することが出来ます。
+以下のメソッドは、それらのスタックないしキュー操作などのために用意されています。
+ただし、性能の劣化を防ぐため、追加するエントリー群を作ってからまとめてL<push()|/push($entries)>, L<unshift()|/unshift($entries)>, L<splice()|/splice($offset, $length, $entries)>することをお勧めします。
+
+=head3 C<< push($entries) >>
+
+辞書エントリーをスタックとして扱い、C<$entries>で指定した追加エントリーを辞書エントリーの末尾に追加します。
+エントリー配列の長さ（L<< $utx->get_line_of_entries()|/get_line_of_entries() >>）は、追加エントリーC<$entries>の数だけ増えます。
+
+追加するエントリーの指定方法は、L<Additional entries （追加するエントリー） |/Additional entries （追加するエントリー） >節を参照してください。
+
+返値はC<push()>された後のエントリーの数（C<INT>）です。
+
+=head3 C<< pop() >>
+
+辞書エントリーをスタックとして扱い、辞書エントリー配列の末尾のエントリーを取り除き、そのエントリーを含む新しいC<Text::UTX::Simple>インスタンスを生成して返します。
+取り除かれたエントリー配列の長さは、1減ります。
+
+=head3 C<< shift() >>
+
+辞書エントリーをキューとして扱い、辞書エントリー配列の先頭のエントリーを取り除き、そのエントリーを含む新しいC<Text::UTX::Simple>インスタンスを生成して返します。
+取り除かれたエントリー配列の長さは、1減ります。
+
+=head3 C<< unshift($entries) >>
+
+辞書エントリーをキューとして扱い、C<$entries>で指定した追加エントリーを辞書エントリーの先頭に追加します。
+エントリー配列の長さ（L<< $utx->get_line_of_entries()|/get_line_of_entries() >>）は、追加エントリーC<$entries>の数だけ増えます。
+
+追加するエントリーの指定方法は、L<Additional entries （追加するエントリー） |/Additional entries （追加するエントリー） >節を参照してください。
+
+返値はC<push()>された後のエントリーの数（C<INT>）です。
+
+=head3 C<< splice($offset, $length, $entries) >>
+
+辞書エントリーを配列として扱い、C<$offset>で指定した位置のエントリー以降、C<$length>個のエントリーを取り除き、そのエントリーを含む新しいC<Text::UTX::Simple>インスタンスを生成して返します。
+C<$entries>がある場合、削除したエントリーの位置にそのエントリー（群）を追加します。
+エントリー配列の長さ（L<< $utx->get_line_of_entries()|/get_line_of_entries() >>）は、削除エントリーの数だけ減り、かつ追加エントリーC<$entries>の数だけ増えます。
+
+追加するエントリーの指定方法は、L<Additional entries （追加するエントリー） |/Additional entries （追加するエントリー） >節を参照してください。
+
+何も削除されなかった場合にはC<undef>を返します。
+
+C<$offset>を指定しないと例外を送出します。
+負値の場合、配列エントリーの末尾をC<-1>として先頭に向かいます。
+
+C<$length>がC<undef>の場合、C<$offset>位置からエントリー配列の末尾までの要素が対象となります。
+
+追加するエントリーの指定方法は、L<Additional entries （追加するエントリー） |/Additional entries （追加するエントリー） >節を参照してください。
+
+=head3 C<< sort >>
+
+B<このメソッドは実装途中です>。
+
+辞書のエントリーを並び替えます。
+ただし、現在の並べ替え手順は、見出し語と訳語の文字コード順のみで実現しています。
+
+=head3 C<< clear() >>
+
+辞書の全てのエントリーを消去します。
+ヘッダーは更新されません。
+
+
+=head2 Additional entries （追加するエントリー）
+
+L<push()|/push($entries)>, L<unshift()|/unshift($entries)>, L<splice()|/splice($offset, $length, $entries)>の引数で用いる、辞書に追加するエントリーとして、以下のデータ構造を使うことが出来ます。
+
+=over 4
+
+=item 解析する文字列（C<STR>）
+
+辞書ファイルの各行に相当する、解析対象の文字列を渡すことが出来ます。
+
+=item 上記のリファレンス（C<SCALARREF>）
+
+文字列をスカラーリファレンスとして渡すことが出来ます。
+
+=item C<Text::UTX::Simple>インスタンス
+
+別のインスタンスを渡すことが出来ます。
+
+=item 各列の値の配列リファレンス（C<ARRAYREF>）
+
+各列の値が入った配列をリファレンスで渡すことが出来ます。
+
+    $utx->push([qw(source_language target_language noun)]);
+
+=item 各列のハッシュリファレンス（C<HASHREF>）
+
+各列のC<< { 列名 => 値 } >>の組が入ったハッシュをリファレンスで渡すことが出来ます。
+
+    $utx->push({            # row 0
+        'src'     => 'foo',     # col 0
+        'tgt'     => 'bar',     # col 1
+        'src:pos' => 'noun',    # col 2
+    });
+
+=item 上記データ型のリスト（C<LIST>）
+
+上記のデータ型は、いずれも行を表現したものですが、複数行渡したい場合にはリストとして渡すことが出来ます。
+
+=item 上記データ型の配列リファレンス（C<ARRAYREF>）
+
+データ構造のリストの代わりに配列リファレンスで渡すことが出来ます。
+
+    $utx->push([
+        #   col 0  col 1  col 2
+        [qw(foo    bar    noun)],   # row 0
+        [qw(baz    qux    verb)],   # row 1
+    ]);
+
+=back
+
+値がC<undef>である場合、C<Text::UTX::Simple>オブジェクトではその値を解析時に空文字（C<q{}>）に変換して保持します。
+値がC<q{}>である場合には、解析時の変換は行いません。
+表示時に空文字を別の文字で補完する場合には、L<set_complement_of_void_value()|/set_complement_of_void_value($character)>メソッドを使ってクラス変数をスイッチしてください。
+
+
+=head2 Syntax sugars （構文糖）
+
+いくつかのメソッドは、以下に掲げたように、C<get_>などの動詞なしで呼び出すことや、名詞の一部を省略形にして呼び出すことも可能です。
+ただし、D. Conway（ダミアン=コンウェイ）によるI<Perl Best Practices>（邦訳I<『Perlベストプラクティス』>）に準拠することをお勧めします。
+
+=over 4
+
+=item *
+
+C<< header() >>
+
+=item *
+
+C<< entries() >>
+
+=item *
+
+C<< columns() >>
+
+=item *
+
+C<< specification() >>
+
+=item *
+
+C<< spec() >>
+
+=item *
+
+C<< version() >>
+
+=item *
+
+C<< source() >>
+
+=item *
+
+C<< target() >>
+
+=item *
+
+C<< alignment() >>
+
+=item *
+
+C<< last_updated() >>
+
+=item *
+
+C<< updated() >>
+
+=item *
+
+C<< miscellany() >>
+
+=item *
+
+C<< misc() >>
+
+=item *
+
+C<< number_of_columns() >>
+
+=item *
+
+C<< number_of_entries() >>
+
+=back
+
+
+=head1 DIAGNOSTICS （例外・警告の診断）
+
+L<Text::UTX::Simple::Manual::Diagnostics_JA|
+Text::UTX::Simple::Manual::Diagnostics_JA>を参照してください。
+
+
+=head1 CONFIGURATION AND ENVIRONMENT （構成と環境）
+
+C<Text::UTX::Simple>は設定ファイルや環境変数を必要としません。
+
+
+=head1 DEPENDENCIES （依存）
+
+C<Text-UTX-Simple>ディストリビューションに含まれるC<Text::UTX::Simple>およびその関係クラスは、以下の要素に依存しています。
+
+=over 4
+
+=item *
+
+perl 5.8.1またはそれ以降
+
+=item *
+
+L<strict|strict>
+- プラグマ
+
+=item *
+
+L<warnings|warnings>
+- プラグマ
+
+=item *
+
+L<utf8|utf8>
+- プラグマ
+
+=item *
+
+L<Attribute::Abstract|Attribute::Abstract>
+- CPANモジュール
+
+=item *
+
+L<Attribute::Alias|Attribute::Alias>
+- CPANモジュール
+
+=item *
+
+L<Attribute::Protected|Attribute::Protected>
+- CPANモジュール
+
+=item *
+
+L<Attribute::Util|Attribute::Util>
+- CPANモジュール
+
+=item *
+
+L<Carp|Carp>
+- コアモジュール
+
+=item *
+
+L<Class::Inspector|Class::Inspector>
+- CPANモジュール
+
+=item *
+
+L<Cwd|Cwd>
+- コアモジュール
+
+=item *
+
+L<DateTime|DateTime>
+- CPANモジュール
+
+=item *
+
+L<DateTime::TimeZone|DateTime::TimeZone>
+- CPANモジュール
+
+=item *
+
+L<Encode|Encode>
+- コアモジュール
+
+=item *
+
+L<English|English>
+- コアモジュール
+
+=item *
+
+L<File::Slurp|File::Slurp>
+- CPANモジュール
+
+=item *
+
+L<List::MoreUtils|List::MoreUtils>
+- CPANモジュール
+
+=item *
+
+L<List::Util|List::Util>
+- コアモジュール
+
+=item *
+
+L<Locale::Country|Locale::Country>
+- コアモジュール
+
+=item *
+
+L<Locale::Language|Locale::Language>
+- コアモジュール
+
+=item *
+
+L<Readonly|Readonly>
+- CPANモジュール
+
+=item *
+
+L<Scalar::Util|Scalar::Util>
+- コアモジュール
+
+=item *
+
+L<Storable|Storable>
+- コアモジュール
+
+=item *
+
+L<Test::Exception|Test::Exception>
+- CPANモジュール（テストに必要）
+
+=item *
+
+L<Test::Harness|Test::Harness>
+- コアモジュール（テストに必要）
+
+=item *
+
+L<Test::More|Test::More>
+- コアモジュール（テストに必要）
+
+=item *
+
+L<Test::Warn|Test::Warn>
+- CPANモジュール（テストに必要）
+
+=item *
+
+L<Tie::IxHash|Tie::IxHash>
+- CPANモジュール
+
+=back
+
+C<Text::UTX::Simple>は以下のクラスに処理を委譲しています。
+
+=over 4
+
+=item *
+
+L<Text::UTX::Simple::Header|Text::UTX::Simple::Header>
+
+=item *
+
+L<Text::UTX::Simple::Entry|Text::UTX::Simple::Entry>
+
+=back
+
+
+=head1 INCOMPATIBILITIES （互換性のない変更点）
+
+互換性のない変更点はありません。
+
+B<ただし、このモジュールはまだ安定版ではありません。>
+B<APIは今後変更される可能性があります。>
+
+
+=head1 BUGS AND LIMITATIONS （バグと制約事項）
+
+=head2 Bugs （バグ）
+
+バグは報告されていません。
+
+
+=head2 Limitations （制約事項）
+
+=head3 Headword only of the numerical value cannot be used （数値のみの見出し語は使用不可）
+
+C<Text::UTX::Simple>は、perlに数値であると見なされる文字列を、辞書の見出し語として使うことが出来ません。
+
+L<perlapi|perlapi>のL<looks_like_number|perlapi/looks_like_number>節を参照してください。
+ただし、C<Inf>およびC<Infinity>は、辞書の見出し語として使えます。
+
+=head3 Blank lines are not saved （空行を保持しない）
+
+UTX-Simple仕様は、エントリー上の空行の扱いについては特に規定していません。
+このライブラリーでは、L<parse()|/parse($utx_formatted_text)>などで読み取る文字列に含まれる空行は無視します。
+
+
+=head2 Making suggestions and reporting bugs （提案とバグ報告）
+
+何かバグを発見されたら、機能のご要望がありましたら、または改善のためのご意見がありましたら、メール（C<bug-text-utx-simple at rt.cpan.org>宛）で報告してください。
+または、Webインターフェース（L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Text-UTX-Simple>）を使って報告してください。
+これによって、その内容が私に通知されます。
+さらに、バグや要望の対応状況について、あなたが通知を自動的に受けることも出来ます。
+
+バグを報告いただく際には、もし可能であれば、バグを再現するための出来るだけ少量のサンプルコードを添えてください。
+勿論、提案やパッチは歓迎します。
+
+
+=head1 SUPPORT （サポート）
+
+このモジュールのドキュメントはC<perldoc>コマンドで見ることが出来ます。
+
+    perldoc Text::UTX::Simple
+
+また、以下の場所も参照してください:
+
+=over 4
+
+=item RT: CPAN's request tracker
+
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Text-UTX-Simple>
+
+=item AnnoCPAN: Annotated CPAN documentation
+
+L<http://annocpan.org/dist/Text-UTX-Simple>
+
+=item Search CPAN
+
+L<http://search.cpan.org/dist/Text-UTX-Simple>
+
+=item CPAN Ratings
+
+L<http://cpanratings.perl.org/d/Text-UTX-Simple>
+
+=back
+
+
+=head1 CODE COVERAGE （コード網羅率）
+
+テストによるコード網羅率を調査するため、L<Devel::Cover|Devel::Cover>を使いました。
+このモジュールのテスト一式に関するC<Devel::Cover>による概要の報告（サマリレポート）を、以下に掲げます。
+
+  ---------------------------- ------ ------ ------ ------ ------ ------ ------
+  File                           stmt   bran   cond    sub    pod   time  total
+  ---------------------------- ------ ------ ------ ------ ------ ------ ------
+  blib/lib/Text/UTX/Simple.pm   100.0  100.0  100.0  100.0  100.0    9.7  100.0
+  ...mple/Auxiliary/Factory.pm  100.0  100.0    n/a  100.0    n/a    2.7  100.0
+  ...b/Text/UTX/Simple/Body.pm  100.0  100.0    n/a  100.0  100.0    1.0  100.0
+  ...t/UTX/Simple/Body/Base.pm  100.0  100.0    n/a  100.0  100.0    1.2  100.0
+  ...UTX/Simple/Body/Dumper.pm  100.0  100.0  100.0  100.0  100.0    2.7  100.0
+  ...imple/Body/Manipulator.pm  100.0  100.0  100.0  100.0  100.0    1.7  100.0
+  ...UTX/Simple/Body/Parser.pm  100.0  100.0  100.0  100.0  100.0    3.2  100.0
+  ...Text/UTX/Simple/Header.pm  100.0  100.0  100.0  100.0  100.0   10.4  100.0
+  ...UTX/Simple/Header/Base.pm  100.0  100.0    n/a  100.0  100.0    5.1  100.0
+  ...X/Simple/Header/Column.pm  100.0  100.0  100.0  100.0  100.0    1.0  100.0
+  ...X/Simple/Header/Dumper.pm  100.0  100.0  100.0  100.0  100.0    0.5  100.0
+  .../Simple/Header/Factory.pm  100.0  100.0  100.0  100.0  100.0    5.1  100.0
+  ...X/Simple/Header/Parser.pm  100.0  100.0  100.0  100.0  100.0    9.0  100.0
+  ...imple/Header/Validator.pm  100.0  100.0  100.0  100.0    n/a   35.4  100.0
+  ...ext/UTX/Simple/Version.pm  100.0  100.0  100.0  100.0  100.0    9.5  100.0
+  ...e/Version/Header/V0_90.pm  100.0  100.0    n/a  100.0  100.0    1.0  100.0
+  ...e/Version/Header/V0_91.pm  100.0  100.0    n/a  100.0  100.0    0.7  100.0
+  ...e/Version/Header/V0_92.pm  100.0  100.0    n/a  100.0  100.0    0.2  100.0
+  Total                         100.0  100.0  100.0  100.0  100.0  100.0  100.0
+  ---------------------------- ------ ------ ------ ------ ------ ------ ------
+
+このモジュールのB<最新版>についての、C<Devel::Cover>が出力した完全な報告書の一式は、
+L<http://perl.ermitejo.com/Text-UTX-Simple/coverage.html>
+で公開しています。
+
+なお、L<Devel::Cover|Devel::Cover>環境下でL<Test::Pod::Coverage|Test::Pod::Coverage>を稼働した場合、L<Protected::Attribute|Protected::Attribute>の保護機構と衝突するため、開発者テストに分離しています。
+ただし、C<Protected>属性のサブルーチンについても、PODで言及しています。
+
+
+=head1 TO DO （今後の予定）
+
+=head2 Converter （コンバーター）
+
+コンバーターモジュールは、インターフェースC<Text::UTX::Simple::Converter>に基づいて、プラグイン形式で使えるようにする予定です。
+また、その際にはトランスレーターのサンプルモジュールを作成します。
+
+例えば:
+
+=over 4
+
+=item ATLAS, L<http://www.fmw.co.jp/>
+
+C<Text::UTX::Simple::Converter::ATLAS>
+
+=item CSV
+
+C<Text::UTX::Simple::Converter::CSV>
+
+=item Edict, L<http://www.vector.co.jp/soft/data/writing/se021690.html>
+
+C<Text::UTX::Simple::Converter::Edict>
+
+=item 英辞郎, L<http://www.eijiro.jp/>
+
+C<Text::UTX::Simple::Converter::Eijiro>
+
+=item EPWING, L<http://www.epwing.or.jp/>
+
+C<Text::UTX::Simple::Converter::EPWING>
+
+=item LogoVista PRO, L<http://www.logovista.co.jp/>
+
+C<Text::UTX::Simple::Converter::LogoVistaPro>
+
+=item PC-Transer, L<http://www.crosslanguage.co.jp/>
+
+C<Text::UTX::Simple::Converter::PCTranser>
+
+=item PDIC, L<http://homepage3.nifty.com/TaN/>
+
+C<Text::UTX::Simple::Converter::PDIC>
+
+=item The翻訳, L<http://www.toshiba-sol.co.jp/>
+
+C<Text::UTX::Simple::Converter::TheHonyaku>
+
+=item 訳してねっと, L<http://www.yakushite.net/>
+
+C<Text::UTX::Simple::Converter::YakushiteNet>
+
+=back
+
+などです。
+
+以下のように、C<Text::UTX::Simple>を継承したクラスとなる予定です。
+
+    use Text::UTX::Simple::Converter;
+
+    my $eijiro = Text::UTX::Simple::Converter->new('Eijiro');
+    $eijiro->read_original('foo.txt');                  # from Eijiro
+    my $utx_string = $eijiro->as_string();              # to   UTX-S
+    $eijiro->write('foo.utx');                          # to   UTX-S
+
+    my $edict  = Text::UTX::Simple::Converter->new('Edict');
+    $edict->read('bar.utx');                            # from UTX-S
+    my $edict_string = $edict->as_original_string();    # to Edict
+    $edict->write('bar.txt');                           # to Edict
+
+概観クラス図は以下の通りです。
+
+    +------------------------------+
+    |      Text::UTX::Simple       |
+    +------------------------------+
+                    ^
+                    |
+                    |
+    +------------------------------+ <<Template Method>>
+    | Text::UTX::Simple::Converter | override new(), clone(), parse(),
+    +------------------------------+          read(), dump(), write(), etc.
+     ^
+     |
+     +-----------------+--------------------+------------------- . . .
+     |                 |                    |
+    +---------------+ +------------------+ +------------------+
+    |T::U::S::C::CSV| |T::U::S::C::Eijiro| |T::U::S::C::EPWING|  . . .
+    +---------------+ +------------------+ +------------------+
+
+
+=head2 Entry （エントリー）
+
+=over 4
+
+=item *
+
+エントリの検証器（バリデーター）を追加します。現在は不正ないし不正と思われる見出し語や、列数の不一致などを見逃しています。
+
+=item *
+
+エントリの検証（バリデート）で送出しようとする例外を警告として扱うためのスイッチを、クラス変数に追加します（アクセッサー・ミューテーターも実装します）。
+また、その際の挙動として、当該エントリをコメントアウトするか、無視するかを設定出来るようにします。
+実装に当たってはL<Exception::Class|Exception::Class>を使用する予定です。
+
+=item *
+
+L<new()|/new>のオプションで、L<push()|/push($entries)>などと同様に、オブジェクト生成時にエントリーを指定を出来るようにします。
+
+=item *
+
+L<push()|/push($entries)>, L<unshift()|/unshift($entries)>, L<read()|/read($filename)>, L<parse()|/parse($utx_formatted_text)>したときに、ヘッダーで規定されている列に満たない列しか与えられなかった場合は、残りの列を空文字（もしくは指定文字）で補完します。
+
+=item *
+
+エントリの列の数は各行で等しいものとし、列の多寡があれば例外を送出するようにします。
+
+=back
+
+
+=head2 Message （メッセージ）
+
+=over 4
+
+=item *
+
+例外送出時の検知元ファイル名や行数を適切に表示します。
+
+=item *
+
+例外や警告などのメッセージを標準エラー出力（C<STDERR>）以外にログファイルへも（ないしは、ログファイルへのみ）出力出来るようにします。
+実装に当たってはL<Log::Log4perl|Log::Log4perl>を使用する予定です。
+
+=item *
+
+「同じ警告がN回以上発生したら処理を中断する」スイッチを、インスタンス変数に追加します（アクセッサー・ミューテーターも実装します）。
+
+=item *
+
+例外や警告のメッセージの言語を切り替えるスイッチを、クラス変数に追加します（アクセッサー・ミューテーターも実装します）。
+現在は英語でのみ実装しています。
+
+=back
+
+
+=head2 Test （テスト）
+
+=over 4
+
+=item *
+
+テストを充実させます（さらなるテストを！）。
+また、拙速主義(quick and dirty)で書いたテストをリファクタリングします。
+
+=item *
+
+余分なテストを削除します（現状はテストケースが少し多過ぎました）。
+
+=item *
+
+開発者テストとユーザーテストを分離します（I<Perl Hacks #62>, L<Module::Install::AuthorTest|Module::Install::AuthorTest>）。
+
+=item *
+
+C<-T>スイッチ（汚染チェック有効）環境下でのテストを試みます。
+
+=item *
+
+開発者の環境(Windows XP SP3 + Strawberry Perl (Perl 5.10.0))でL<Devel::Cover|Devel::Cover>使用時に生じるC<< Use of uninitialized value in bitwise and (&) at D:/STRAWB~1/perl/lib/B/Deparse.pm line 4252. >>という警告を調査します。
+
+=back
+
+
+=head2 Miscellany （雑多な項目）
+
+=over 4
+
+=item *
+
+ドキュメントの英訳を充実させます。
+
+=item *
+
+L<read()|/read($filename)>のオプションでL<File::Slurp|File::Slurp>へのオプションも指定出来るようにします。
+その目的はC<binmode>です。
+もしくは、L<read()|/read($filename)>やL<parse()|/parse($utx_formatted_text)>で、入力ファイルや入力文字列のエンコーディングを指定するオプションを導入します。
+
+=item *
+
+L<parse()|/parse($utx_formatted_text)>, L<read()|/read($filename)>の前にL<new()|/new>でUTX-Sのバージョンを指定していない場合でも、読み込んだ文字列やファイルからUTX-SのバージョンをL<guess_version()|/guess_version($string)>で類推出来るようにします。
+
+=item *
+
+L<as_string()|/as_string()>やL<push()|/push($entries)>メソッドのための演算子オーバーロードを検討します。
+
+=item *
+
+Iterator Patternを使用して、C<< $utx->each() >>メソッドを実装します。
+
+=item *
+
+L<dump_header()|dump_header()>などのメソッドに、YAML文字列で出力するためのオプションC<yaml>を導入することを検討します。これは、L<YAML|YAML>ないしL<YAML::Syck|YAML::Syck>のラッパとして動くものとして想定しています。
+
+=item *
+
+メソッドチェインを実現出来るよう、一部のメソッドの返値をC<undef>からC<$self>に変えます。
+
+=item *
+
+文字列ないしファイルがUTX-S形式であるかを、インスタンスを作らずとも判別出来るように、C<< is_utx(\%option) >>のようなクラスメソッドを実装します。
+
+=item *
+
+いくつかの処理を最適化します。
+
+=back
+
+
+=head1 SEE ALSO （関連情報）
+
+=over 4
+
+=item UTX-Simple仕様の公式ページ（日本語版）
+
+L<http://www.aamt.info/japanese/utx/>
+
+=item UTX-Simple仕様の公式ページ（英語版）
+
+L<http://www.aamt.info/english/utx/>
+
+=item L<Text::CSV_XS|Text::CSV_XS>
+
+汎用的なxSVの操作のために。
+
+=back
+
+
+=head1 AUTHOR （作者）
+
+=over 4
+
+=item MORIYA Masaki
+
+E<lt>moriya at ermitejo.comE<gt>,
+L<http://ttt.ermitejo.com/>
+
+=back
+
+はC<Text::UTX::Simple>モジュールの責任者です。
+
+UTX仕様およびUTX-Simple仕様はAAMT（Asia-Pacific Association for Machine Translation; アジア太平洋機械翻訳協会, L<http://www.aamt.info/>）の研究成果であり、全ての権利はAAMTが保有しています。
+
+なお、作者はAAMTに所属していますが、AAMTはこのツールの内容を一切関知しません。
+
+
+=head1 LICENCE AND COPYRIGHT （使用条件と著作権）
+
+Copyright (c) 2008-2009, MORIYA Masaki E<lt>moriya at ermitejo.comE<gt>.
+All rights reserved.
+
+このモジュールはフリーソフトウェアです。
+あなたはこれをPerlと同じように自由に改変・配布することが出来ます。
+詳しくはL<perlgpl|perlgpl>およびL<perlartistic|perlartistic>を参照してください。
+
+原文は以下の通りです。
+
+This is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See L<perlgpl|perlapi> and L<perlartistic|perlartistic>.
+
+
+=head2 Note: about deliverables （成果物について）
+
+このモジュールによる成果物（生成された辞書など）、すなわち出力されるデータの著作権は、入力したデータの著作権と同じです。
+例えば、あなたが著作権を持つユーザ辞書を、このモジュールを使ってUTX-S形式の辞書に変換した場合、変換後の辞書についてもあなたが著作権を持ちます。
+
+
+=head1 DISCLAIMER OF WARRANTY （免責条項）
+
+BECAUSE THIS SOFTWARE IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
+FOR THE SOFTWARE, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN
+OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES
+PROVIDE THE SOFTWARE "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER
+EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE
+ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE SOFTWARE IS WITH
+YOU. SHOULD THE SOFTWARE PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL
+NECESSARY SERVICING, REPAIR, OR CORRECTION.
+
+IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
+WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+REDISTRIBUTE THE SOFTWARE AS PERMITTED BY THE ABOVE LICENCE, BE
+LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL,
+OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE
+THE SOFTWARE (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING
+RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A
+FAILURE OF THE SOFTWARE TO OPERATE WITH ANY OTHER SOFTWARE), EVEN IF
+SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGES.
+
+=head2 Note: about specification （仕様について）
+
+このモジュールに対する開発者の責任のみならず、UTXの仕様それ自体に対する仕様策定団体（AAMT）の責任についても、上記と同様に免責されます。
+
+
+=head1 ACKNOWLEDGEMENTS （謝辞）
+
+本モジュールを開発するにあたり、多くの方のご協力を賜りました。
+ここに、心より感謝を捧げます。
+
+=over 4
+
+=item Sharing/Standardization Working Group, MT Research Committee, AAMT （アジア太平洋機械翻訳協会 機械翻訳課題調査委員会 共有化・標準化ワーキンググループ）, L<http://www.aamt.info/japanese/utx/>
+
+本モジュールの公開へ向けて、諸々のご意見をいただきました。
+また、ワーキンググループに参加させていただき、モジュールについての示唆をいただきました。
+
+=item Francis Bond, L<http://www2.nict.go.jp/x/x161/en/member/bond/index-j.html>
+
+UTX-Simpl仕様の詳細などについて、貴重な助言や情報をいただきました。
+また、本モジュールの公開へ向けたAAMT内での調整を行っていただきました。
+さらに、公開前にモジュールをご覧いただきました。
+
+=back
+
+
+=head1 NOTE FROM TRANSLATOR （訳注）
+
+=over 4
+
+=item Katakana-Hiragana Prolonged Sound Mark （音引き）
+
+この文書は、UTX-Simpleの辞書表記指針（ガイドライン）案に基づき、英単語のカタカナ表記について、単語語尾の音引きを省かずに表記しています。
+例えば、「entry」を「エントリ」ではなく「エントリー」と表記しています。
+JIS Z 8301で規定されているような音引きの省略はしていません。
+
+=back

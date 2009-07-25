@@ -1,0 +1,54 @@
+Revision history for Text-UTX-Simple
+
+0.00_00 2008-12-28
+
+    1)  [Feature]
+        Initial release.
+
+0.01_00 2009-03-24 (Rev.39)
+
+    1)  [Feature]
+        Library learned to manipulate entries of the dictionary.
+        push(), pop(), unshift(), shift() and splice() are available.
+
+    2)  [Feature]
+        Library learned to return alternative data-type at dump().
+
+    3)  [Feature]
+        Library learned to consult() the dictionary for the equivalent.
+
+0.02_00 2009-04-XX (Rev.XX) *LATEST*
+
+    1)  [Feature]
+        Library learned to support UTX-S 0.91
+        (the UTX-Simple specification version 0.91) and UTX-S 0.92.
+
+    2)  [Feature]
+        Library learned to keep comment line.
+
+    3)  [Feature]
+        Library learned to guess_version().
+
+    4)  [Improvement]
+        Library improves validation of properties in the header on
+        the dictionary.
+
+    5)  [Refactoring]
+        Library spread modules among role.
+
+
+Revision milestone for Text-UTX-Simple
+
+0.03_00 (Next) 2009-Q2
+
+    1)  [Feature]
+        Library will learn to validate part-of-speech.
+
+0.04_00 (Next*2) 2009-H2
+
+    1)  [Feature]
+        Library will learn to sort appropriately.
+
+0.05_00 (Next*3)
+
+    Uncertain.

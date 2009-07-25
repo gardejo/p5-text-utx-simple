@@ -1,0 +1,87 @@
+=head1 NAME
+
+Text::UTX::Simple::Manual - manual: front page of Text::UTX::Simple
+
+
+=head1 C<Text::UTX::Simple> manual table of contents
+
+C<Text::UTX::Simple::Manual> contains documentation on using
+the L<Text::UTX::Simple|Text::UTX::Simple>.
+
+=over 4
+
+=item L<Text::UTX::Simple::Manual|
+        Text::UTX::Simple::Manual>
+
+Here.
+
+=item L<Text::UTX::Simple|
+        Text::UTX::Simple>
+
+Provides a description of the C<Text::UTX::Simple>.
+
+=item L<Text::UTX::Simple::Manual::EN::ClassDiagram|
+        Text::UTX::Simple::Manual::EN::ClassDiagram>
+
+Provides class diagram of the C<Text::UTX::Simple>.
+
+B<Note: a diagram was provided as a PNG formatted image file>.
+
+=item L<Text::UTX::Simple::Manual::EN::Diagnostics|
+        Text::UTX::Simple::Manual::EN::Diagnostics>
+
+Provides diagnostics of the C<Text::UTX::Simple>.
+
+=item L<Text::UTX::Simple::Manual::EN::Appendix|
+        Text::UTX::Simple::Manual::EN::Appendix>
+
+Provides appendices to the C<Text::UTX::Simple>.
+
+=back
+
+
+=head1 AUTHOR
+
+=over 4
+
+=item MORIYA Masaki
+
+E<lt>moriya at ermitejo.comE<gt>,
+L<http://ttt.ermitejo.com/>
+
+=back
+
+is responsible for C<Text::UTX::Simple> module.
+
+The UTX specification and the UTX-Simple specification
+are results of examination by AAMT
+(Asia-Pacific Association for Machine Translation, L<http://www.aamt.info/>);
+and all rights are reserved by AAMT.
+
+
+=head1 LICENCE AND COPYRIGHT
+
+Copyright (c) 2008-2009, MORIYA Masaki E<lt>moriya at ermitejo.comE<gt>.
+All rights reserved.
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See L<perlgpl|perlapi> and L<perlartistic|perlartistic>.
+
+
+=head1 VERSION
+
+This document describes version 0.02_00 ($Rev: 46 $) of
+C<Text::UTX::Simple>,
+released C<$Date: 2009-03-31 22:55:48 +0900 (火, 31 3 2009) $>.
+
+Other language edition of this document is available at:
+
+=over 4
+
+=item Japanese
+
+L<Text::UTX::Simple::Manual::JA::Diagnostics|
+  Text::UTX::Simple::Manual::JA::Diagnostics>
+
+=back

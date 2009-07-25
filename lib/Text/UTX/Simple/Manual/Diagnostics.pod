@@ -1,0 +1,423 @@
+=head1 NAME
+
+Text::UTX::Simple::Manual::Diagnostics - manual: diagnostics of Text::UTX::Simple
+
+=head1 WARNING! WARNING!
+
+B<I am currently translating into the following section.>
+
+
+=head1 DIAGNOSTICS
+
+=head2 From C<Text::UTX::Simple> class
+
+=over 4
+
+=item C<< Can't create an object: option isn't a HASH reference >>
+
+Data type of C<new()>'s option is invalid.
+You must not pass anything, or must pass HASH reference if you pass it.
+
+=item C<< Can't clone an object:
+          option isn't a HASH reference >>
+
+Data type of C<clone()>'s option is invalid.
+You must not pass anything, or must pass HASH reference if you pass it.
+
+=item C<< Useless use private variable in void context >> (warning)
+
+You called C<is_defined_column_only()>, C<as_string()>, C<dump_header()>,
+or C<dump_body()>, at void context.
+Because these methods do not have the side effect,
+these warned and ended without processing anything.
+
+=item C<< Can't parse strings:
+          strings aren't defined >>
+
+C<parse()> fails parsing.
+Perhaps you called this method without arguments,
+argument is C<undef>, or arguments is empty string (C<q{}>).
+You must pass strings to be parsed.
+
+=item C<< Can't parse the strings:
+          element of lines (%d) isn't valid type >>
+
+C<parse()> failed in the parsing of the value passed as the argument.
+You must pass strings to be parsed,
+as SCALAR, SCALAR reference, LIST, or ARRAY reference.
+
+=item C<< Can't read a dictionary:
+          filename isn't defined or is empty >>
+
+C<read()> failed in reading.
+File name is C<undef>, or is empty character (C<q{}>).
+You must pass file name to be read.
+
+=item C<< Can't read the file (%s): (%s) >>
+
+C<read()> failed in reading file that was passed to the method as an argument.
+This method displays exceptions that was thrown out
+by L<File::Slurp|File::Slurp>, and the method caught it.
+
+If you want to specify path that includes characters other than ASCII,
+you must convert path into the character-code adapted to the filesystem on
+your system, and pass it to the method as an argument.
+For example, it is necessary to encode to C<cp932>
+in Japanese version Win32 environment.
+
+See the B<CAVEAT> section of L<Text::UTX::Simple|Text::UTX::Simple>
+for further details.
+
+=item C<< Can't write a dictionary:
+          filename isn't defined or is empty >>
+
+C<write()> failed in writing.
+File name is C<undef>, or is empty character (C<q{}>).
+You must pass file name to be write.
+
+=item C<< Can't convert column name into column index:
+          attempt to use LIST as names
+          (you should use an ARRAY reference) >>
+
+C<name_to_index()> failed in conversion
+of the column index into the column name.
+Two arguments or more were passed to the method.
+If you want to convert multiple column names, you must pass ARRAY reference.
+
+=item C<< Can't convert column index into column name:
+          attempt to use LIST as indexes
+          (you should use an ARRAY reference) >>
+
+C<index_to_name()> failed in conversion
+of the column name into the column index.
+Two arguments or more were passed to the method.
+If you want to convert multiple column indexes, you must pass ARRAY reference.
+
+=item C<< Can't convert entry array into entry hash:
+          attempt to use LIST as names
+          (you should use an ARRAY reference) >>
+
+C<array_to_hash()> failed in conversion
+of LIST of value of each column that exists in specified row
+into HASH of C<< { column_name => column_value } >>.
+Two arguments or more were passed to the method.
+If you want to convert multiple rows, you must pass ARRAY reference.
+
+=item C<< Can't convert entry hash into entry array:
+          attempt to use LIST as names
+          (you should use an ARRAY reference) >>
+
+C<array_to_hash()> failed in conversion
+of HASH of C<< { column_name => column_value } >>
+into LIST of value of each column that exists in specified row.
+Two arguments or more were passed to the method.
+If you want to convert multiple rows, you must pass ARRAY reference.
+
+=item C<< Can't create an object:
+          option should have only one behavior key >>
+
+C<new()> failed in creating an instance.
+Both C<text> and C<file> exist in the key to HASH reference
+that passed to the method as an option.
+You must specify only either of C<text> to parse strings,
+or C<file> to read and parse file.
+
+=item C<< Can't validate type:
+          option isn't a HASH reference >>
+
+C<as_string()>, C<dump_header()>, or C<dump_body()> failed in each process.
+Data type of an argument as an option is invalid.
+You must not pass anything, or must pass HASH reference if you pass it.
+
+=item C<< Can't validate type:
+          type assignment isn't exclusive
+          (you ware assined multiple types below, %s) >>
+
+C<as_string()>, C<dump_header()> or C<dump_body()> failed in each process.
+You mistook a way to specify the output form.
+Concretely, two or more keys about C<scalar>, C<scalar_ref>, C<list>, C<array>,
+C<array_ref>, C<hash> or C<hash_ref>, whose HASH value is the truth exist
+among the HASH reference passed to the method as an option.
+You must not specify anything, or must specify only one key,
+whose HASH value is the truth.
+
+=back
+
+
+=head2 From C<Text::UTX::Simple::Header> class
+
+=over 4
+
+=item C<< Can't parse the header:
+          header strings isn't defined >>
+
+Please define header strings.
+
+=item C<< Can't parse the header:
+          header strings aren't valid >>
+
+Please define valid header strings. See UTX-Simple specification.
+
+=item C<< Can't convert column name into column index:
+          column name isn't defined >>
+
+(This section has not been translated yet.)
+
+=item C<< Can't convert column name into column index:
+          type of column name (%s) isn't valid >>
+
+(This section has not been translated yet.)
+
+=item C<< Can't convert column index into column name:
+          column index isn't defined >>
+
+(This section has not been translated yet.)
+
+=item C<< Can't convert column index into column name:
+          type of column index (%d) isn't valid >>
+
+(This section has not been translated yet.)
+
+=item C<< Can't convert entry array into entry hash:
+          entry array isn't defined >>
+
+(This section has not been translated yet.)
+
+=item C<< Can't convert entry array into entry hash:
+          type of entry array (%s) isn't an ARRAY reference >>
+
+(This section has not been translated yet.)
+
+=item C<< Can't convert entry array into entry hash:
+          column index (%d) isn't defined on header >>
+
+(This section has not been translated yet.)
+
+=item C<< Can't convert entry hash into entry array:
+          entry hash isn't defined >>
+
+(This section has not been translated yet.)
+
+=item C<< Can't convert entry hash into entry array:
+          type of entry hash (%s) isn't a HASH reference >>
+
+(This section has not been translated yet.)
+
+=item C<< Can't convert entry hash into entry array:
+          column name (%s) isn't defined on header >>
+
+(This section has not been translated yet.)
+
+=item C<< Can't convert column name into column index:
+          column name at argument's offset (%d) isn't defined >>
+
+Undefined column name string was specified.
+Please specify the value from among basic/proper columns.
+
+=item C<< Can't convert column name into column index:
+          column name (%s) isn't defined on header >>
+
+(This section has not been translated yet.)
+
+=item C<< Can't convert column index into column name:
+          column index at argument's offset (%d) isn't defined >>
+
+(This section has not been translated yet.)
+
+=item C<< Can't convert column index into column name:
+          column index (%d) isn't number >>
+
+(This section has not been translated yet.)
+
+=item C<< Can't convert column index into column name:
+          column index (%d) past end of array >>
+
+Unexisted column index number (minus value) was specified.
+Please specify the value within the range of the number of the row.
+
+=item C<< Can't convert column index into column name:
+          column index (%d) isn't defined on header >>
+
+Unexisted column index number was specified, when
+L<Text::UTX::Simple|Text::UTX::Simple/is_defined_column_only()> is TRUE.
+Please specify the value within the range of the number of the row.
+
+=item C<< Can't parse the header:
+          language for proper column's definition isn't defined >>
+
+Invalid header was detected.
+Perhaps you define proper column as C<foo/bar/baz>.
+You must specify C<source:foo/bar/target:baz>.
+
+=item C<< Can't parse the header:
+          proper column (%s) on language (%s) is duplicated >>
+
+Invalid definition of column was detected. Proper column should be exclusive.
+Please check definition of proper columns on your dictionary.
+
+=item C<< Can't parse the header:
+          source language (%s) isn't ISO 639-1 format >>
+
+Invalid source language was detected. The language is not ISO 639-1 format.
+Please check source language on your dictionary.
+
+=item C<< Can't parse the header:
+          target language (%s) isn't ISO 639-1 format >>
+
+Invalid target language was detected. The language is not ISO 639-1 format.
+Please check target language on your dictionary.
+
+=item C<< Specified language (%s) isn't valid as ISO 639-1 format >>
+
+Invalid language was detected. The language is not ISO 639-1 format.
+Please check source/target language on your dictionary.
+
+=item C<< Specified region (%s) isn't valid as ISO 3166 format >>
+
+Invalid region was detected. The region is not ISO 3166 format.
+Please check source/target region on your dictionary.
+
+=back
+
+
+=head2 From C<Text::UTX::Simple::Body> class
+
+=over 4
+
+=item C<< Can't create a new %s instance:
+          a back-link to parent doesn't exist >>
+
+(This section has not been translated yet.)
+
+=item C<< Can't clone a %s instance:
+          a back-link to parent doesn't exist >>
+
+(This section has not been translated yet.)
+
+=item C<< Can't sort entries:
+          this method isn't implemented >>
+
+(This section has not been translated yet.)
+
+=item C<< Can't parse an entry:
+          argument's class (%s) differs from original's class (%s) >>
+
+(This section has not been translated yet.)
+
+=item C<< Can't parse elements:
+          deep recursion >>
+
+(This section has not been translated yet.)
+
+=item C<< Can't splice entries:
+          argument's columns (%s) differ from original's columns (%s) >>
+
+(This section has not been translated yet.)
+
+=item C<< Can't parse an entry:
+          headword (first column) is void or is ineffective,
+          therefore, specified line (%d) was skipped >> (warning)
+
+(This section has not been translated yet.)
+
+=item C<< Can't parse an entry:
+          headword (first column) is void or is ineffective,
+          therefore, specified element (%d) was skipped >> (warning)
+
+(This section has not been translated yet.)
+
+=item C<< Can't parse an entry:
+          headword (first column) looks like number,
+          therefore, specified line (%d) was skipped >> (warning)
+
+(This section has not been translated yet.)
+
+=item C<< Can't parse an entry:
+          headword (first column) looks like number,
+          therefore, specified element (%d) was skipped >> (warning)
+
+(This section has not been translated yet.)
+
+=item C<< Can't project columns:
+          offset (%d) past end of array >>
+
+(This section has not been translated yet.)
+
+=item C<< Can't select rows:
+          offset (%d) past end of array >>
+
+(This section has not been translated yet.)
+
+=item C<< Can't select rows:
+          entry (%s) doesn't exist >>
+
+(This section has not been translated yet.)
+
+=item C<< Can't splice entries:
+          argument offset (%s) isn't numeric >> (warning)
+
+(This section has not been translated yet.)
+
+=item C<< Can't splice entries:
+          offset past end of array >> (warning)
+
+(This section has not been translated yet.)
+
+=item C<< Can't splice entries:
+          modification of non-creatable array value attempted >> (warning)
+
+(This section has not been translated yet.)
+
+=item C<< Can't splice entries:
+          argument length (%s) isn't numeric >> (warning)
+
+(This section has not been translated yet.)
+
+=back
+
+
+=head1 AUTHOR
+
+=over 4
+
+=item MORIYA Masaki
+
+E<lt>moriya at ermitejo.comE<gt>,
+L<http://ttt.ermitejo.com/>
+
+=back
+
+is responsible for C<Text::UTX::Simple> module.
+
+The UTX specification and the UTX-Simple specification
+are results of examination by AAMT
+(Asia-Pacific Association for Machine Translation, L<http://www.aamt.info/>);
+and all rights are reserved by AAMT.
+
+
+=head1 LICENCE AND COPYRIGHT
+
+Copyright (c) 2008-2009, MORIYA Masaki E<lt>moriya at ermitejo.comE<gt>.
+All rights reserved.
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See L<perlgpl|perlapi> and L<perlartistic|perlartistic>.
+
+
+=head1 VERSION
+
+This document describes version 0.02_00 ($Rev: 61 $) of
+C<Text::UTX::Simple>,
+released C<$Date: 2009-04-16 01:51:54 +0900 (木, 16 4 2009) $>.
+
+Other language edition of this document is available at:
+
+=over 4
+
+=item Japanese
+
+L<Text::UTX::Simple::Manual::Diagnostics_JA|
+  Text::UTX::Simple::Manual::Diagnostics_JA>
+
+=back
